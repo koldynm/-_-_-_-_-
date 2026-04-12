@@ -1,0 +1,69 @@
+﻿<Window x:Class="мне_бы_жить_в_шоколаде.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowState="Maximized"
+        Title="Панель управления — Repair Service" Height="600" Width="1000"
+        Background="{DynamicResource MdSurface}">
+
+    <Window.Resources>
+
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Margin" Value="12,16,12,0"/>
+            <Setter Property="Background" Value="{DynamicResource MdTertiary}"/>
+            <Setter Property="Foreground" Value="#31110E"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{DynamicResource MdSurfaceContainer}" BorderThickness="0">
+            <StackPanel Margin="0,24,0,0">
+                <TextBlock Text="Repair Service" 
+                           Foreground="{DynamicResource MdPrimary}" 
+                           FontSize="24" FontWeight="Bold" 
+                           Margin="28,0,0,24" HorizontalAlignment="Left"/>
+
+                <StackPanel Margin="28,0,0,24">
+                    <TextBlock x:Name="NameText" Text="Василий" Foreground="{DynamicResource MdOnSurface}" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="RoleText" Text="Technicial" Foreground="{DynamicResource MdOnSurfaceVariant}" FontSize="14" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <Separator Margin="24,8" Background="{DynamicResource MdSurfaceContainerHigh}" Height="1"/>
+
+                <RadioButton x:Name="OpenRequests" 
+                    Content="Открытые заявки" 
+                    GroupName="Nav"
+                    IsChecked="True"
+                    Style="{StaticResource MenuButton}" 
+                    Click="OpenRequests_Click"/>
+
+                <RadioButton x:Name="AcceptedRequests" 
+                    Content="Принятые заявки" 
+                    GroupName="Nav"
+                    Style="{StaticResource MenuButton}" 
+                    Click="AcceptedRequests_Click"/>
+
+                <RadioButton x:Name="ArchivedRequests" 
+                    Content="Архив заявок" 
+                    GroupName="Nav"
+                    Style="{StaticResource MenuButton}" 
+                    Click="ArchivedRequests_Click"/>
+
+                <Separator Margin="24,8" Background="{DynamicResource MdSurfaceContainerHigh}" Height="1"/>
+
+                <Button x:Name="BtnAddRequest" Content="+ Новая заявка" 
+                        Style="{StaticResource AccentButton}" 
+                        Click="BtnAddRequest_Click"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Background="{DynamicResource MdSurface}" CornerRadius="24,0,0,0" Margin="0">
+            <Frame x:Name="NavigationHost" NavigationUIVisibility="Hidden"/>
+        </Border>
+    </Grid>
+</Window>
