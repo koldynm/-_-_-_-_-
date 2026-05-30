@@ -33,7 +33,7 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Margin="28,0,0,0" Grid.Column="0">
-                        <TextBlock x:Name="NameText" Text="Василий" Foreground="{DynamicResource MdOnSurface}" FontSize="16" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="NameText" Text="Василий" TextWrapping="Wrap" Foreground="{DynamicResource MdOnSurface}" FontSize="16" FontWeight="SemiBold"/>
                         <TextBlock x:Name="RoleText" Text="Technicial" Foreground="{DynamicResource MdOnSurfaceVariant}" FontSize="14" Margin="0,4,0,0"/>
                     </StackPanel>
                     <Button Style="{StaticResource PrimaryButton}" Background="{DynamicResource MdTertiary}" Grid.Column="1" Content="Выход" Click="ExitButton_Click" Margin="20, 0, 0, 0"/>
