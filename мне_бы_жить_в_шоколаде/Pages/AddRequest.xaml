@@ -33,8 +33,10 @@
 
                 <TextBlock Text="Описание проблемы" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                 <TextBox x:Name="DescriptionText" Height="120" Margin="0,0,0,32" 
-                         Style="{StaticResource ModernInput}"
-                         TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="12"/>
+                         Style="{StaticResource ModernInputO}"
+                         TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="12" TextChanged="DescriptionText_TextChanged"/>
+                <TextBlock Text="Выполнить до:" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,16,0,8"/>
+                <DatePicker x:Name="DeadlinePicker" Height="48" Margin="0,0,0,16"/>
 
                 <Grid>
                     <Grid.ColumnDefinitions>

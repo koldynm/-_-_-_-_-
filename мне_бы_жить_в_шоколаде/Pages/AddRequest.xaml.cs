@@ -16,9 +16,7 @@ using мне_бы_жить_в_шоколаде.Entities;
 
 namespace мне_бы_жить_в_шоколаде.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для AddRequest.xaml
-    /// </summary>
+    
     public partial class AddRequest : Page
     {
 
@@ -35,7 +33,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
         private async void LoadEquipment()
         {
-            // Загружаем список оборудования для выпадающего списка
+          
             var response = await _supabase.From<Equipment>().Get();
             EquipmentCombo.ItemsSource = response.Models;
         }
@@ -50,17 +48,19 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
             try
             {
-                // 1. Подготавливаем данные
+              
                 var newRequest = new RepairRequest
                 {
                     EquipmentId = (Guid)EquipmentCombo.SelectedValue,
-                    RequesterId = Guid.Parse(_supabase.Auth.CurrentUser.Id), // ID текущего пользователя
+                    RequesterId = Guid.Parse(_supabase.Auth.CurrentUser.Id), 
                     Description = DescriptionText.Text,
                     Priority = (PriorityCombo.SelectedItem as FrameworkElement)?.Tag.ToString(),
-                    Status = "new" // Начальный статус
+                    Status = "new",
+                    Deadline = DeadlinePicker.SelectedDate?.ToUniversalTime(),
+                    CreatedAt = DateTime.Now
                 };
 
-                // 2. Отправляем в Supabase
+                
                 await _supabase.From<RepairRequest>().Insert(newRequest);
 
                 MessageBox.Show("Заявка успешно создана!");
@@ -75,6 +75,11 @@ namespace мне_бы_жить_в_шоколаде.Pages
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             _onClose(false);
+        }
+
+        private void DescriptionText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }

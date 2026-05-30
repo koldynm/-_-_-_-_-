@@ -1,0 +1,88 @@
+﻿<Page x:Class="мне_бы_жить_в_шоколаде.Pages.RequestControl"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:мне_бы_жить_в_шоколаде.Pages"
+      mc:Ignorable="d"
+      Title="AboutRequest" Height="450" Width="800">
+   <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="400"/>
+        </Grid.ColumnDefinitions>
+
+        <Border  
+                Margin="-60,0,15,0" 
+                Background="{DynamicResource MdSurface}" 
+                BorderBrush="{DynamicResource MdOutline}" 
+                BorderThickness="1" 
+                CornerRadius="16"
+                Padding="24">
+            <StackPanel Grid.Column="0" Margin="0,0,24,0" >
+                <TextBlock x:Name="TxtTitle" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource MdPrimary}" Text="Название заявки..."/>
+
+                <TextBlock Text="Дата создания:" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="0,16,0,4"/>
+                <TextBlock x:Name="TxtCreatedAt" Foreground="{DynamicResource MdOnSurface}" FontSize="16"/>
+
+                <TextBlock Text="Дедлайн:" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="0,16,0,4"/>
+                <TextBlock x:Name="TxtDeadline" Foreground="{DynamicResource MdOnSurface}" FontSize="16"/>
+
+                <TextBlock x:Name="TxtCompletedInfo" Foreground="{DynamicResource MdTertiary}" FontSize="16" Margin="0,16,0,0" Visibility="Collapsed"/>
+
+                <TextBlock x:Name="TxtDescription" Foreground="{DynamicResource MdOnSurface}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="BtnRefuse" Content="Отказаться от заявки" Style="{StaticResource PrimaryButton}" Click="BtnRefuse_OnClick" Margin="-5 0 5 0"/>
+
+                    <Button x:Name="BtnComplete" Content="Завершить заявку" Style="{StaticResource PrimaryButton}"  Click="BtnComplete_Click" Margin="0 0 0 0"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Background="{DynamicResource MdSurfaceContainer}" BorderBrush="Black" BorderThickness="1" CornerRadius="16" Padding="16" >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Чат по заявке" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource MdOnSurface}" Margin="0,0,0,16"/>
+
+                <ScrollViewer Grid.Row="1" x:Name="ChatScroller" VerticalScrollBarVisibility="Hidden">
+                    <ItemsControl x:Name="MessagesList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border x:Name="MsgBorder" Background="{DynamicResource MdSurfaceContainerHigh}" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                                    <StackPanel x:Name="MessageContainer">
+                                        <TextBlock Text="{Binding CreatedAt, StringFormat=dd.MM HH:mm}" FontSize="10" Foreground="{DynamicResource MdOutline}"/>
+                                        <TextBlock x:Name="MessageText" Text="{Binding MessageText}" Foreground="{DynamicResource MdOnSurface}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsOwnMessage}" Value="True">
+                                        <Setter TargetName="MsgBorder" Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter TargetName="MsgBorder" Property="Background" Value="#D1E4FF"/> 
+                                        <Setter TargetName="MessageContainer" Property="Margin" Value="40,0,0,8"/>
+                                        <Setter TargetName="MessageText" Property="Foreground" Value="Black"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <Grid Grid.Row="2" Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TxtNewMessage" Style="{DynamicResource ModernInput}" TextWrapping="Wrap" MaxHeight="100"/>
+                    <Button Grid.Column="1" Content="Отправить" Style="{StaticResource PrimaryButton}" Width="100" Margin="8,0,0,0" Click="BtnSendMessage_Click"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

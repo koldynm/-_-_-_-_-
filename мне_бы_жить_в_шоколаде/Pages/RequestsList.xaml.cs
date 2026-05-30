@@ -19,14 +19,12 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace мне_бы_жить_в_шоколаде.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для RequestsList.xaml
-    /// </summary>
     public partial class RequestsList : Page
     {
         private Supabase.Client _supabase;
         private Profile _profile;
         private Action<RepairRequest> _editRequest;
+        private Action<RepairRequest> _controlRequest;
 
         private string filterStatus = "new";
 
@@ -40,8 +38,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
         private void UpdateUI()
         {
             TakeRequestButton.Visibility = (_profile.Role == "technician" && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
-            FinishRequestButton.Visibility = (_profile.Role == "technician" && filterStatus == "in_progress") ? Visibility.Visible : Visibility.Collapsed;
-            RefuseRequestButton.Visibility = (_profile.Role == "technician" && filterStatus == "in_progress") ? Visibility.Visible : Visibility.Collapsed;
+            ControlRequestButton.Visibility = (filterStatus == "in_progress") ? Visibility.Visible : Visibility.Collapsed;
             EditRequestButton.Visibility = (_profile.Role == "admin") ? Visibility.Visible : Visibility.Collapsed;
             DeleteRequestButton.Visibility = (_profile.Role == "admin") ? Visibility.Visible : Visibility.Collapsed;
 
@@ -49,12 +46,13 @@ namespace мне_бы_жить_в_шоколаде.Pages
         }
 
 
-        public RequestsList(Supabase.Client supabase, Profile profile, Action<RepairRequest> editRequest) 
+        public RequestsList(Supabase.Client supabase, Profile profile, Action<RepairRequest> editRequest, Action<RepairRequest> controlRequest) 
         {
             InitializeComponent();
             _supabase = supabase;
             _profile = profile;
             _editRequest = editRequest;
+            _controlRequest = controlRequest;
             UpdateUI();
 
             LoadData();
@@ -64,16 +62,12 @@ namespace мне_бы_жить_в_шоколаде.Pages
         {
             try
             {
-                // Инициализация (в идеале вынести в App.xaml.cs или DI)
-
-                // Получение данных
                 var response = await _supabase
                     .From<RepairRequest>()
                     .Filter("status", Postgrest.Constants.Operator.Equals, filterStatus)
                     .Get();
                 var requests = response.Models;
 
-                // Привязка к таблице
                 RequestsGrid.ItemsSource = requests;
             }
             catch (Exception ex)
@@ -108,40 +102,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
                 MessageBox.Show("Выберите задачу");
             }
         }
-
-        private async void FinishRequestButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (RequestsGrid.SelectedItem is RepairRequest request)
-            {
-                await _supabase.From<RepairRequest>()
-                    .Where(r => r.Id == request.Id)
-                    .Set(r => r.Status, "closed")
-                    .Update();
-                LoadData();
-            }
-            else
-            {
-                MessageBox.Show("Выберите задачу");
-            }
-        }
-
-        private async void RefuseRequestButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (RequestsGrid.SelectedItem is RepairRequest request)
-            {
-                await _supabase.From<RepairRequest>()
-                    .Where(r => r.Id == request.Id)
-                    .Set(r => r.TechnicianId, null)
-                    .Set(r => r.Status, "new")
-                    .Update();
-                LoadData();
-            }
-            else
-            {
-                MessageBox.Show("Выберите задачу");
-            }
-        }
-
+        
         private async void EditRequestButton_Click(object sender, RoutedEventArgs e)
         {
 
@@ -170,6 +131,18 @@ namespace мне_бы_жить_в_шоколаде.Pages
                 MessageBox.Show("Выберите задачу");
             }
 
+        }
+
+        private void ControlRequestButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (RequestsGrid.SelectedItem is RepairRequest request)
+            {
+                _controlRequest(request);
+            }
+            else
+            {
+                MessageBox.Show("Выберите задачу");
+            }
         }
     }
 }

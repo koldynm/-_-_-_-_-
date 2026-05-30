@@ -1,11 +1,5 @@
 ﻿using Postgrest.Attributes;
 using Postgrest.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace мне_бы_жить_в_шоколаде.Entities
 {

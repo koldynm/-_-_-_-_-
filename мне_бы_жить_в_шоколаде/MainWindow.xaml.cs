@@ -1,45 +1,36 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using Supabase.Gotrue;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using мне_бы_жить_в_шоколаде.Entities;
 using мне_бы_жить_в_шоколаде.Pages;
 
 namespace мне_бы_жить_в_шоколаде
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+    
     public partial class MainWindow : Window
     {
         private Supabase.Client _supabase;
+        private Session _session;
         private Pages.RequestsList requestsList;
         private Profile? currentProfile;
 
 
-        public MainWindow()
+        public MainWindow(Supabase.Client supabase, Session session)
         {
             InitializeComponent();
+            _supabase = supabase;
+            _session = session;
             init();
         }
 
         private async void init()
         {
-            // 1. Сначала ждем инициализации клиента
-            await InitSupabase();
 
-            // 2. Затем работаем с пользователем
             await ListenUser();
 
-            // 3. Только потом создаем список, когда клиент и пользователь готовы
-            requestsList = new Pages.RequestsList(_supabase, currentProfile, (r => 
+            requestsList = new Pages.RequestsList(
+                _supabase, 
+                currentProfile, 
+                (r => 
             {
                 var Page = new EditRequest(r, _supabase, (u =>
                 {
@@ -47,35 +38,28 @@ namespace мне_бы_жить_в_шоколаде
                     if (u) requestsList.LoadData();
                 }));
                 NavigationHost.Navigate(Page);
-            }));
+            }),
+                (r =>
+                {
+                    var page = new RequestControl(_supabase, r, currentProfile, (() =>
+                    {
+                        NavigationHost.Navigate(requestsList);
+                        requestsList.LoadData();
+                    }));
+                    NavigationHost.Navigate(page);
+                }));
             NavigationHost.Navigate(requestsList);
         }
 
 
         private async Task ListenUser()
         {
-            // Получаем текущую сессию
-            var session = _supabase.Auth.CurrentSession;
-
-            if (session == null)
-            {
-                var authWindow = new AuthWindow(_supabase);
-                authWindow.ShowDialog();
-
-                // ВАЖНО: берем обновленную сессию из окна после его закрытия
-                session = authWindow.Session;
-            }
-
-            // Если пользователь так и не вошел (закрыл окно), не продолжаем
-            if (session?.User == null) return;
 
             try
             {
-                // 4. ИСПРАВЛЕНИЕ: Загружаем профиль из таблицы Profiles, а не RepairRequest
-                // И используем поле класса currentProfile (без var), чтобы данные сохранились
                 currentProfile = await _supabase
-                    .From<Profile>() // Убедитесь, что сущность Profile сопоставлена с таблицей в БД
-                    .Filter("id", Postgrest.Constants.Operator.Equals, session.User.Id)
+                    .From<Profile>() 
+                    .Filter("id", Postgrest.Constants.Operator.Equals, _session.User.Id)
                     .Single();
                
 
@@ -85,7 +69,21 @@ namespace мне_бы_жить_в_шоколаде
                 }
 
                 NameText.Text = currentProfile.Name;
-                RoleText.Text = currentProfile.Role;
+                string roleName = "";
+                switch (currentProfile.Role)
+                {
+                    case "requster":
+                        roleName = "Пользователь";
+                        break;
+                    case "technician":
+                        roleName = "Техник";
+                        break;
+                    case "admin":
+                        roleName = "Администратор";
+                        break;
+                }
+
+                RoleText.Text = roleName;
             }
             catch (Exception ex)
             {
@@ -93,17 +91,9 @@ namespace мне_бы_жить_в_шоколаде
             }
         }
 
-        private async Task InitSupabase()
-        {
-            string url = "https://hlczwmextdxrpgrhbamx.supabase.co";
-            string key = "sb_publishable_TWcgpnJeYc_uHwtqywm5MA_3fusT1Lq";
-            _supabase = new Supabase.Client(url, key);
-            await _supabase.InitializeAsync();
-        }
 
         private void BtnAddRequest_Click(object sender, RoutedEventArgs e)
         {
-            // Снимаем выделение с фильтров, так как мы уходим на другую страницу
             OpenRequests.IsChecked = false;
             AcceptedRequests.IsChecked = false;
             ArchivedRequests.IsChecked = false;
@@ -112,7 +102,6 @@ namespace мне_бы_жить_в_шоколаде
             {
                 requestsList.LoadData();
                 NavigationHost.Navigate(requestsList);
-                // Возвращаем выделение на "Открытые", когда вернулись
                 OpenRequests.IsChecked = true;
             }));
             NavigationHost.Navigate(addPage);
@@ -132,6 +121,22 @@ namespace мне_бы_жить_в_шоколаде
         {
 
             requestsList.SetFilterStatus("closed");
+        }
+        private async void ExitButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                await _supabase.Auth.SignOut();
+
+                var authWindow = new AuthWindow(_supabase);
+
+                authWindow.Show();
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка выхода: {ex.Message}");
+            }
         }
     }
 }

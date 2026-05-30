@@ -1,25 +1,39 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <SolidColorBrush x:Key="MdSurface" Color="#141218"/>
-    <SolidColorBrush x:Key="MdSurfaceContainer" Color="#211F26"/>
-    <SolidColorBrush x:Key="MdSurfaceContainerHigh" Color="#2B2930"/>
+    <!-- Основная цветовая палитра-->
+    <SolidColorBrush x:Key="MdSurface" Color="#FFFFFF"/>
+    <!-- Основной фон -->
+    <SolidColorBrush x:Key="MdSurfaceContainer" Color="#F5F7F9"/>
+    <!-- Фон боковой панели и второстепенных элементов -->
+    <SolidColorBrush x:Key="MdSurfaceContainerHigh" Color="#FFFFFF"/>
+    <!-- Фон полей ввода и карточек -->
 
-    <SolidColorBrush x:Key="MdPrimary" Color="#E2B6FF"/>
-    <SolidColorBrush x:Key="MdOnPrimary" Color="#421A66"/>
-    <SolidColorBrush x:Key="MdPrimaryContainer" Color="#5A337F"/>
+    <SolidColorBrush x:Key="MdPrimary" Color="#3B82F6"/>
+    <!-- Основной синий цвет -->
+    <SolidColorBrush x:Key="MdOnPrimary" Color="#FFFFFF"/>
+    <!-- Текст на синем фоне -->
+    <SolidColorBrush x:Key="MdPrimaryContainer" Color="#3B82F6"/>
+    <!-- Контейнер активного элемента -->
+    <SolidColorBrush x:Key="MdOnPrimaryContainer" Color="#FFFFFF"/>
+    <!-- Текст в активном контейнере -->
 
-    <SolidColorBrush x:Key="MdTertiary" Color="#FFB3AE"/>
-    <SolidColorBrush x:Key="MdOnSurface" Color="#E6E0E9"/>
-    <SolidColorBrush x:Key="MdOnSurfaceVariant" Color="#CAC4D0"/>
-    <SolidColorBrush x:Key="MdOutline" Color="#938F99"/>
+    <SolidColorBrush x:Key="MdTertiary" Color="#EF4444"/>
+    <!-- Вспомогательный цвет -->
+    <SolidColorBrush x:Key="MdOnSurface" Color="#1F2937"/>
+    <!-- Основной текст -->
+    <SolidColorBrush x:Key="MdOnSurfaceVariant" Color="#6B7280"/>
+    <!-- Второстепенный текст -->
+    <SolidColorBrush x:Key="MdOutline" Color="Black"/>
+    <!-- Цвет границ -->
 
+    <!-- Стиль для полей ввода -->
     <Style x:Key="ModernInput" TargetType="Control">
-        <Setter Property="Height" Value="48"/>
+        <Setter Property="Height" Value="40"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Foreground" Value="{StaticResource MdOnSurface}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="Padding" Value="16,0"/>
+        <Setter Property="Padding" Value="12,0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Control">
@@ -27,14 +41,16 @@
                             Background="{StaticResource MdSurfaceContainerHigh}" 
                             BorderBrush="{StaticResource MdOutline}" 
                             BorderThickness="1" 
-                            CornerRadius="12">
+                            CornerRadius="8">
                         <ScrollViewer x:Name="PART_ContentHost" Focusable="false" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource MdPrimary}"/>
-                            <Setter TargetName="border" Property="BorderThickness" Value="2"/>
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource MdSurfaceContainer}"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="#D1D5DB"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -42,28 +58,60 @@
         </Setter>
     </Style>
 
+    <Style x:Key="ModernInputO" TargetType="Control">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="{StaticResource MdOnSurface}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Control">
+                    <Border x:Name="border" 
+                        Background="{StaticResource MdSurfaceContainerHigh}" 
+                        BorderBrush="{StaticResource MdOutline}" 
+                        BorderThickness="1" 
+                        CornerRadius="8">
+                        <ScrollViewer x:Name="PART_ContentHost" Focusable="false" VerticalAlignment="Top"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource MdPrimary}"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="#D1D5DB"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Стиль для основной кнопки -->
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource MdPrimary}"/>
         <Setter Property="Foreground" Value="{StaticResource MdOnPrimary}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="Medium"/>
-        <Setter Property="Height" Value="40"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Padding" Value="16,0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="20">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="18">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#F2D8FF"/>
+                            <Setter TargetName="border" Property="Background" Value="#2563EB"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#CFA0EB"/>
+                            <Setter TargetName="border" Property="Background" Value="#1D4ED8"/>
                             <Setter TargetName="border" Property="RenderTransform">
                                 <Setter.Value>
-                                    <ScaleTransform ScaleX="0.98" ScaleY="0.98" CenterX="0.5" CenterY="0.5"/>
+                                    <ScaleTransform ScaleX="0.97" ScaleY="0.97" CenterX="0.5" CenterY="0.5"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -73,24 +121,27 @@
         </Setter>
     </Style>
 
+    <!-- Стиль для таблицы -->
     <Style x:Key="ModernDataGrid" TargetType="DataGrid">
         <Setter Property="Background" Value="{StaticResource MdSurface}"/>
         <Setter Property="Foreground" Value="{StaticResource MdOnSurface}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="RowBackground" Value="{StaticResource MdSurface}"/>
-        <Setter Property="AlternatingRowBackground" Value="{StaticResource MdSurfaceContainer}"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource MdSurfaceContainerHigh}"/>
+        <Setter Property="AlternatingRowBackground" Value="#FAFAFA"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource MdOutline}"/>
         <Setter Property="RowHeaderWidth" Value="0"/>
         <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="FontSize" Value="14"/>
     </Style>
 
+    <!-- Стиль для выпадающего списка -->
     <Style x:Key="ModernComboBox" TargetType="ComboBox">
-        <Setter Property="Height" Value="48"/>
+        <Setter Property="Height" Value="40"/>
         <Setter Property="Foreground" Value="{StaticResource MdOnSurface}"/>
         <Setter Property="Background" Value="{StaticResource MdSurfaceContainerHigh}"/>
         <Setter Property="BorderBrush" Value="{StaticResource MdOutline}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="16,0"/>
+        <Setter Property="Padding" Value="12,0"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Template">
@@ -107,7 +158,7 @@
                             Background="{TemplateBinding Background}" 
                             BorderBrush="{TemplateBinding BorderBrush}" 
                             BorderThickness="{TemplateBinding BorderThickness}" 
-                            CornerRadius="12"/>
+                            CornerRadius="8"/>
 
                         <ToggleButton x:Name="ToggleButton" 
                                   Grid.ColumnSpan="2"
@@ -132,7 +183,7 @@
                           Data="M0,0 L4,4 L8,0 Z" 
                           HorizontalAlignment="Right" 
                           VerticalAlignment="Center" 
-                          Margin="0,0,16,0"
+                          Margin="0,0,12,0"
                           IsHitTestVisible="False"/>
 
                         <Popup x:Name="PART_Popup" 
@@ -144,18 +195,18 @@
                            PopupAnimation="Slide">
 
                             <Border x:Name="DropDownBorder" 
-                                Background="{StaticResource MdSurfaceContainerHigh}" 
+                                Background="{StaticResource MdSurface}" 
                                 BorderBrush="{StaticResource MdOutline}" 
                                 BorderThickness="1" 
-                                CornerRadius="12" 
+                                CornerRadius="8" 
                                 MaxHeight="300"
                                 MinWidth="{Binding ActualWidth, ElementName=MainGrid}" 
                                 Margin="0,4,0,10">
                                 <Border.Effect>
-                                    <DropShadowEffect BlurRadius="15" Color="Black" Opacity="0.4" ShadowDepth="4"/>
+                                    <DropShadowEffect BlurRadius="10" Color="Black" Opacity="0.1" ShadowDepth="2"/>
                                 </Border.Effect>
 
-                                <ScrollViewer Margin="4" SnapsToDevicePixels="True">
+                                <ScrollViewer Margin="2" SnapsToDevicePixels="True">
                                     <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Border>
@@ -163,15 +214,11 @@
                     </Grid>
 
                     <ControlTemplate.Triggers>
-                        <Trigger Property="HasItems" Value="false">
-                            <Setter TargetName="DropDownBorder" Property="Height" Value="95"/>
-                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{StaticResource MdPrimary}"/>
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="#D1D5DB"/>
                         </Trigger>
                         <Trigger Property="IsDropDownOpen" Value="True">
                             <Setter TargetName="MainBorder" Property="BorderBrush" Value="{StaticResource MdPrimary}"/>
-                            <Setter TargetName="MainBorder" Property="BorderThickness" Value="2"/>
                             <Setter TargetName="Arrow" Property="RenderTransform">
                                 <Setter.Value>
                                     <RotateTransform Angle="180" CenterX="4" CenterY="2"/>
@@ -184,23 +231,24 @@
         </Setter>
     </Style>
 
+    <!-- Элемент выпадающего списка -->
     <Style TargetType="ComboBoxItem">
-        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="Padding" Value="12,8"/>
         <Setter Property="Foreground" Value="{StaticResource MdOnSurface}"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBoxItem">
-                    <Border x:Name="gd" Background="{TemplateBinding Background}" CornerRadius="8" Margin="2">
-                        <ContentPresenter />
+                    <Border x:Name="gd" Background="{TemplateBinding Background}" CornerRadius="4" Margin="2">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="gd" Property="Background" Value="{StaticResource MdSurfaceContainer}"/>
+                            <Setter TargetName="gd" Property="Background" Value="#F3F4F6"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="gd" Property="Background" Value="{StaticResource MdPrimaryContainer}"/>
-                            <Setter Property="Foreground" Value="{StaticResource MdOnPrimary}"/>
+                            <Setter TargetName="gd" Property="Background" Value="#EBF5FF"/>
+                            <Setter Property="Foreground" Value="{StaticResource MdPrimary}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -208,56 +256,54 @@
         </Setter>
     </Style>
 
+    <!-- Заголовки таблицы -->
     <Style x:Key="MdDataGridColumnHeader" TargetType="DataGridColumnHeader">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource MdOnSurfaceVariant}"/>
-        <Setter Property="Height" Value="48"/>
-        <Setter Property="Padding" Value="16,0"/>
-        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        <Setter Property="BorderBrush" Value="{StaticResource MdSurfaceContainerHigh}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MdOutline}"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DataGridColumnHeader">
                     <Border Background="{TemplateBinding Background}" 
                         BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        Padding="{TemplateBinding Padding}">
-                        <ContentPresenter VerticalAlignment="Center"/>
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
+    <!-- Кнопки меню (Боковая панель) -->
     <Style x:Key="MenuButton" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource MdOnSurfaceVariant}"/>
+        <Setter Property="Foreground" Value="{StaticResource MdOnSurfaceVariant}"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="FontWeight" Value="Medium"/>
-        <Setter Property="Height" Value="48"/>
-        <Setter Property="Margin" Value="12,2"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Margin" Value="8,2"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="24">
-                        <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="24,0,0,0"/>
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8">
+                        <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource MdSurfaceContainerHigh}"/>
+                            <Setter TargetName="border" Property="Background" Value="#F3F4F6"/>
+                            <Setter Property="Foreground" Value="{StaticResource MdOnSurface}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource MdPrimaryContainer}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource MdOnPrimaryContainer}"/>
-                            <Setter TargetName="border" Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect BlurRadius="8" Opacity="0.1" ShadowDepth="2"/>
-                                </Setter.Value>
-                            </Setter>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource MdPrimary}"/>
+                            <Setter Property="Foreground" Value="{StaticResource MdOnPrimary}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

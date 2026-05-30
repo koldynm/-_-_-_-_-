@@ -11,7 +11,6 @@ namespace мне_бы_жить_в_шоколаде.Pages
         private readonly Supabase.Client _supabase;
         private readonly Action<bool> _onClose;
 
-        // Свойство для привязки данных в XAML
         public RepairRequest Request { get; set; }
 
         public EditRequest(RepairRequest request, Supabase.Client supabase, Action<bool> onClose)
@@ -21,14 +20,14 @@ namespace мне_бы_жить_в_шоколаде.Pages
             _onClose = onClose;
             Request = request;
 
-            // Устанавливаем контекст данных для привязок
             this.DataContext = this;
             LoadEquipment();
+
+            SetEnums();
         }
 
         private async void LoadEquipment()
         {
-            // Загружаем список оборудования для выпадающего списка
             var response = await _supabase.From<Equipment>().Get();
             EquipmentCombo.ItemsSource = response.Models;
         }
@@ -38,20 +37,18 @@ namespace мне_бы_жить_в_шоколаде.Pages
             try
             {
                 Request.UpdatedAt = DateTime.Now;
-
-                // Если статус меняется на "Completed", проставляем дату закрытия
+                
                 if (Request.Status == "Completed")
                 {
                     Request.ClosedAt = DateTime.Now;
                 }
 
-                // Обновляем запись в Supabase
                 await _supabase.From<RepairRequest>()
                                .Where(x => x.Id == Request.Id)
                                .Update(Request);
 
                 MessageBox.Show("Заявка успешно обновлена!");
-                _onClose?.Invoke(true); // Закрываем страницу с флагом успеха
+                _onClose?.Invoke(true);
             }
             catch (Exception ex)
             {
@@ -62,6 +59,17 @@ namespace мне_бы_жить_в_шоколаде.Pages
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             _onClose?.Invoke(false);
+        }
+
+        private void SetEnums()
+        {
+            RequestStatusCB.ItemsSource = EnumValue.RequestStatuses;
+            RequestPriorityCB.ItemsSource = EnumValue.RequestPriorities;
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }

@@ -7,7 +7,7 @@
 
     <Grid>
         <Grid.Background>
-            <SolidColorBrush Color="#141218"/>
+            <SolidColorBrush Color="LightCyan"/>
         </Grid.Background>
 
         <Border VerticalAlignment="Center" HorizontalAlignment="Center" 

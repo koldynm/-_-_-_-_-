@@ -5,7 +5,7 @@
 
     <Grid Background="{DynamicResource MdSurface}">
         <Border VerticalAlignment="Center" HorizontalAlignment="Center" 
-                Width="400" Padding="32" Background="{DynamicResource MdSurfaceContainer}" CornerRadius="28">
+                Width="400" Padding="32" Background="{DynamicResource MdSurfaceContainer}" CornerRadius="28" BorderBrush="Black" BorderThickness="1">
             <StackPanel>
                 <TextBlock Text="Редактирование" FontSize="24" FontWeight="Medium" 
                            Foreground="{DynamicResource MdOnSurface}" Margin="0,0,0,24"/>
@@ -20,32 +20,23 @@
 
                 <TextBlock Text="Описание" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,4" FontSize="12"/>
                 <TextBox Text="{Binding Request.Description, UpdateSourceTrigger=PropertyChanged}" 
-                         Style="{StaticResource ModernInput}" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,16"/>
+                         Style="{StaticResource ModernInputO}" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,16" TextChanged="TextBox_TextChanged"/>
 
                 <UniformGrid Columns="2">
                     <StackPanel Margin="0,0,8,0">
                         <TextBlock Text="Статус" Foreground="{DynamicResource MdOnSurfaceVariant}" FontSize="12" Margin="4,0,0,4"/>
-                        <ComboBox SelectedValue="{Binding Request.Status, UpdateSourceTrigger=PropertyChanged}" 
-                  SelectedValuePath="Content" 
+                        <ComboBox x:Name="RequestStatusCB" SelectedValue="{Binding Request.Status, UpdateSourceTrigger=PropertyChanged}" 
+                  SelectedValuePath="Value" DisplayMemberPath="Name"
                   Style="{StaticResource ModernComboBox}"
-                  Height="48">
-                            <ComboBoxItem Content="New"/>
-                            <ComboBoxItem Content="In Progress"/>
-                            <ComboBoxItem Content="Completed"/>
-                        </ComboBox>
+                  Height="48"/>
                     </StackPanel>
 
                     <StackPanel Margin="8,0,0,0">
                         <TextBlock Text="Приоритет" Foreground="{DynamicResource MdOnSurfaceVariant}" FontSize="12" Margin="4,0,0,4"/>
-                        <ComboBox SelectedValue="{Binding Request.Priority, UpdateSourceTrigger=PropertyChanged}" 
-                  SelectedValuePath="Content" 
+                        <ComboBox x:Name="RequestPriorityCB" SelectedValue="{Binding Request.Priority, UpdateSourceTrigger=PropertyChanged}" 
+                  SelectedValuePath="Value" DisplayMemberPath="Name"
                   Style="{StaticResource ModernComboBox}"
-                  Height="48">
-                            <ComboBoxItem Content="Низкий"/>
-                            <ComboBoxItem Content="Средний"/>
-                            <ComboBoxItem Content="Высокий"/>
-                            <ComboBoxItem Content="Критический"/>
-                        </ComboBox>
+                  Height="48"/>
                     </StackPanel>
                 </UniformGrid>
 

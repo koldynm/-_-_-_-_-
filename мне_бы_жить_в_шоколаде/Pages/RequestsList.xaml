@@ -80,15 +80,14 @@
                     Click="TakeRequest_Click" 
                     Style="{StaticResource PrimaryButton}" />
 
-            <Button x:Name="FinishRequestButton" Content="Завершить" Click="FinishRequestButton_Click"/>
             <Button x:Name="EditRequestButton" Content="Изменить" Click="EditRequestButton_Click"/>
-            <Button x:Name="RefuseRequestButton" Content="Отказаться" Click="RefuseRequestButton_Click"/>
 
             <Button x:Name="DeleteRequestButton" Content="Удалить" 
                     Click="DeleteRequestButton_Click" 
                     Foreground="{DynamicResource MdTertiary}" 
                     HorizontalAlignment="Right"
                     Width="160" Height="44"/>
+            <Button x:Name="ControlRequestButton" Content="Управление заявкой" Click="ControlRequestButton_OnClick"/>
         </StackPanel>
     </Grid>
 </Page>
