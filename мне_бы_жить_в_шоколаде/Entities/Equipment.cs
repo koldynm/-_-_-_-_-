@@ -44,27 +44,4 @@ namespace мне_бы_жить_в_шоколаде.Entities
         // Удобное свойство для вывода в UI (например, "Проектор - Epson EB-530")
         public string FullDisplayName => $"{EquipmentType?.Name} {Model}".Trim();
     }
-
-    [Table("locations")]
-    public class Location : BaseModel
-    {
-        [PrimaryKey("id", false)]
-        public Guid Id { get; set; }
-
-        [Column("room_number")]
-        public string RoomNumber { get; set; }
-
-        [Column("building")]
-        public string Building { get; set; }
-    }
-
-    [Table("equipment_types")]
-    public class EquipmentType : BaseModel
-    {
-        [PrimaryKey("id", false)]
-        public Guid Id { get; set; }
-
-        [Column("name")]
-        public string Name { get; set; }
-    }
 }

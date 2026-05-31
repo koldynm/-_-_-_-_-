@@ -29,18 +29,18 @@ public partial class RequestControl : Page
         private void LoadRequestDetails()
         {
             TxtTitle.Text = "Заявка #" + _currentRequest.Id.ToString().Substring(0, 5);
-            TxtCreatedAt.Text = _currentRequest.CreatedAt.ToLocalTime().ToString("f");
+            TxtCreatedAt.Text = _currentRequest.CreatedAt.ToString("f");
             TxtDescription.Text = _currentRequest.Description;
             
             TxtDeadline.Text = _currentRequest.Deadline.HasValue 
-                ? _currentRequest.Deadline.Value.ToLocalTime().ToString("f") 
+                ? _currentRequest.Deadline.Value.ToString("f") 
                 : "Не указан";
 
             if (_currentRequest.CompletedAt.HasValue)
             {
                 BtnComplete.Visibility = Visibility.Collapsed;
                 TxtCompletedInfo.Visibility = Visibility.Visible;
-                TxtCompletedInfo.Text = $"Завершена: {_currentRequest.CompletedAt.Value.ToLocalTime():f}";
+                TxtCompletedInfo.Text = $"Завершена: {_currentRequest.CompletedAt.Value:f}";
             }
         }
 
