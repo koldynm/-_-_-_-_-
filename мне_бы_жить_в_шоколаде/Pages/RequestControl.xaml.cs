@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
+using мне_бы_жить_в_шоколаде.Converters;
 using мне_бы_жить_в_шоколаде.Entities;
 
 namespace мне_бы_жить_в_шоколаде.Pages;
@@ -33,15 +35,7 @@ public partial class RequestControl : Page
 
     private async void LoadRequestDetails()
     {
-        TxtTitle.Text = $"Заявка #{_currentRequest.Id.ToString()[..5]}";
-        TxtRequestInfo.Text = $"Создана для ремонта оборудования. ID: {_currentRequest.Id}";
-        TxtCreatedAt.Text = _currentRequest.CreatedAt.ToString("f");
-        TxtDescription.Text = _currentRequest.Description;
-        TxtStatus.Text = GetStatusDisplayName(_currentRequest.Status);
-        TxtPriority.Text = string.IsNullOrWhiteSpace(_currentRequest.Priority) ? "Не указан" : _currentRequest.Priority;
-        TxtDeadline.Text = _currentRequest.Deadline.HasValue
-            ? _currentRequest.Deadline.Value.ToString("f")
-            : "Не указан";
+        RequestInfo.DataContext = _currentRequest;
 
         TxtRequester.Text = "Загрузка...";
         TxtTechnician.Text = _currentRequest.TechnicianId.HasValue ? "Загрузка..." : "Не назначен";
@@ -127,20 +121,11 @@ public partial class RequestControl : Page
         var values = new[]
         {
             string.IsNullOrWhiteSpace(equipment.InventoryNumber) ? null : $"Инв. №: {equipment.InventoryNumber}",
-            string.IsNullOrWhiteSpace(equipment.SerialNumber) ? null : $"Серийный №: {equipment.SerialNumber}",
-            string.IsNullOrWhiteSpace(equipment.Status) ? null : $"Статус: {equipment.Status}"
+            string.IsNullOrWhiteSpace(equipment.Status) ? null : $"Статус: {new EquipmentStatusConverter().Convert(equipment.Status, typeof(string), null, CultureInfo.CurrentCulture)}"
         };
 
         return string.Join(" · ", values.Where(value => value != null));
     }
-
-    private static string GetStatusDisplayName(string? status) => status switch
-    {
-        "new" => "Открыта",
-        "in_progress" => "В работе",
-        "closed" => "Закрыта",
-        _ => string.IsNullOrWhiteSpace(status) ? "Не указан" : status
-    };
 
     private async void LoadMessages()
     {

@@ -12,6 +12,8 @@ public partial class EquipmentsControl : Page
     {
         InitializeComponent();
         _supabase = supabase;
+        
+        ControlPanel.Visibility = Visibility.Collapsed;
         LoadEquipments();
     }
 
@@ -41,7 +43,12 @@ public partial class EquipmentsControl : Page
     {
         if (EquipmentsGrid.SelectedItem is Equipment equipment)
         {
+            ControlPanel.Visibility = Visibility.Visible;
             StatusCombo.SelectedValue = equipment.Status;
+        }
+        else
+        {
+            ControlPanel.Visibility = Visibility.Collapsed;
         }
     }
 

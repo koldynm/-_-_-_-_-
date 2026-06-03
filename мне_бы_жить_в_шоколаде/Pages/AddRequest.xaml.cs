@@ -76,11 +76,6 @@ namespace мне_бы_жить_в_шоколаде.Pages
         {
             _onClose(false);
         }
-
-        private void DescriptionText_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
     }
 }
 
