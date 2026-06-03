@@ -5,119 +5,215 @@ using мне_бы_жить_в_шоколаде.Entities;
 namespace мне_бы_жить_в_шоколаде.Pages;
 
 public partial class RequestControl : Page
+{
+    private readonly Supabase.Client _supabase;
+    private readonly RepairRequest _currentRequest;
+    private readonly Profile _profile;
+    private readonly Action _close;
+
+    public RequestControl(Supabase.Client supabase, RepairRequest request, Profile profile, Action close)
     {
-        private Supabase.Client _supabase;
-        private RepairRequest _currentRequest;
-        private Profile _profile;
-        private Action _close;
+        InitializeComponent();
+        _supabase = supabase;
+        _currentRequest = request;
+        _profile = profile;
+        _close = close;
 
-        public RequestControl(Supabase.Client supabase, RepairRequest request, Profile profile, Action close)
+        UpdateActionButtons();
+        LoadRequestDetails();
+        LoadMessages();
+    }
+
+    private void UpdateActionButtons()
+    {
+        var showTechnicianActions = AppRoles.IsTechnician(_profile.Role) && _currentRequest.CompletedAt == null;
+        BtnComplete.Visibility = showTechnicianActions ? Visibility.Visible : Visibility.Collapsed;
+        BtnRefuse.Visibility = showTechnicianActions ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async void LoadRequestDetails()
+    {
+        TxtTitle.Text = $"Заявка #{_currentRequest.Id.ToString()[..5]}";
+        TxtRequestInfo.Text = $"Создана для ремонта оборудования. ID: {_currentRequest.Id}";
+        TxtCreatedAt.Text = _currentRequest.CreatedAt.ToString("f");
+        TxtDescription.Text = _currentRequest.Description;
+        TxtStatus.Text = GetStatusDisplayName(_currentRequest.Status);
+        TxtPriority.Text = string.IsNullOrWhiteSpace(_currentRequest.Priority) ? "Не указан" : _currentRequest.Priority;
+        TxtDeadline.Text = _currentRequest.Deadline.HasValue
+            ? _currentRequest.Deadline.Value.ToString("f")
+            : "Не указан";
+
+        TxtRequester.Text = "Загрузка...";
+        TxtTechnician.Text = _currentRequest.TechnicianId.HasValue ? "Загрузка..." : "Не назначен";
+        TxtEquipment.Text = "Загрузка...";
+        TxtEquipmentInfo.Text = string.Empty;
+
+        if (_currentRequest.CompletedAt.HasValue)
         {
-            InitializeComponent();
-            _supabase = supabase;
-            _currentRequest = request;
-            _profile = profile;
-            _close = close;
-            
-            BtnComplete.Visibility = (_profile.Role == "technician" ) ? Visibility.Visible : Visibility.Collapsed;
-            BtnRefuse.Visibility = (_profile.Role == "technician" ) ? Visibility.Visible : Visibility.Collapsed;
-
-            LoadRequestDetails();
-            LoadMessages();
+            TxtCompletedInfo.Visibility = Visibility.Visible;
+            TxtCompletedInfo.Text = $"Завершена: {_currentRequest.CompletedAt.Value:f}";
+        }
+        else
+        {
+            TxtCompletedInfo.Visibility = Visibility.Collapsed;
         }
 
-        private void LoadRequestDetails()
-        {
-            TxtTitle.Text = "Заявка #" + _currentRequest.Id.ToString().Substring(0, 5);
-            TxtCreatedAt.Text = _currentRequest.CreatedAt.ToString("f");
-            TxtDescription.Text = _currentRequest.Description;
-            
-            TxtDeadline.Text = _currentRequest.Deadline.HasValue 
-                ? _currentRequest.Deadline.Value.ToString("f") 
-                : "Не указан";
+        UpdateActionButtons();
+        await LoadAdditionalRequestInfoAsync();
+    }
 
-            if (_currentRequest.CompletedAt.HasValue)
-            {
-                BtnComplete.Visibility = Visibility.Collapsed;
-                TxtCompletedInfo.Visibility = Visibility.Visible;
-                TxtCompletedInfo.Text = $"Завершена: {_currentRequest.CompletedAt.Value:f}";
-            }
+    private async Task LoadAdditionalRequestInfoAsync()
+    {
+        try
+        {
+            var requesterTask = LoadProfileNameAsync(_currentRequest.RequesterId);
+            var technicianTask = _currentRequest.TechnicianId.HasValue
+                ? LoadProfileNameAsync(_currentRequest.TechnicianId.Value)
+                : Task.FromResult("Не назначен");
+            var equipmentTask = LoadEquipmentAsync(_currentRequest.EquipmentId);
+
+            await Task.WhenAll(requesterTask, technicianTask, equipmentTask);
+
+            TxtRequester.Text = requesterTask.Result;
+            TxtTechnician.Text = technicianTask.Result;
+
+            var equipment = equipmentTask.Result;
+            TxtEquipment.Text = GetEquipmentDisplayName(equipment);
+            TxtEquipmentInfo.Text = GetEquipmentInfo(equipment);
         }
-
-        private async void LoadMessages()
+        catch (Exception ex)
         {
-            try
-            {
-                var response = await _supabase.From<ChatMessage>()
-                    .Filter("request_id", Postgrest.Constants.Operator.Equals, _currentRequest.Id.ToString())
-                    .Order("created_at",  Postgrest.Constants.Ordering.Ascending)
-                    .Get();
-                
-                List<UiChatMessage> messages = [  ];
-                foreach (var msg in response.Models)
-                {
-                    var uiMsg = new UiChatMessage
-                    {
-                        Id = msg.Id,
-                        RequestId = msg.RequestId,
-                        SenderId = msg.SenderId,
-                        MessageText = msg.MessageText,
-                        CreatedAt = msg.CreatedAt,
-                        IsOwnMessage = msg.SenderId == _profile.Id
-                    };
-                    messages.Add(uiMsg);
-                }
-                
-                MessagesList.ItemsSource = null;
-                MessagesList.ItemsSource = messages;
-                ChatScroller.ScrollToEnd();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка загрузки чата: " + ex.Message);
-            }
-        }
-
-        private async void BtnSendMessage_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(TxtNewMessage.Text)) return;
-
-            var msg = new ChatMessage
-            {
-                RequestId = _currentRequest.Id,
-                SenderId = _profile.Id,
-                MessageText = TxtNewMessage.Text.Trim(),
-                CreatedAt = DateTime.Now
-            };
-
-            await _supabase.From<ChatMessage>().Insert(msg);
-            TxtNewMessage.Clear();
-            LoadMessages();
-        }
-
-        private async void BtnComplete_Click(object sender, RoutedEventArgs e)
-        {
-            var now = DateTime.UtcNow;
-            var update = await _supabase.From<RepairRequest>()
-                .Where(x => x.Id == _currentRequest.Id)
-                .Set(x => x.CompletedAt, now)
-                .Set(x => x.Status, "closed")
-                .Update();
-            _close();
-
-            _currentRequest.CompletedAt = now;
-            LoadRequestDetails();
-            MessageBox.Show("Заявка успешно завершена!");
-            
-        }
-
-        private async void BtnRefuse_OnClick(object sender, RoutedEventArgs e)
-        {
-            await _supabase.From<RepairRequest>()
-                .Where(r => r.Id == _currentRequest.Id)
-                .Set(r => r.TechnicianId, null)
-                .Set(r => r.Status, "new")
-                .Update();
-            _close();
+            MessageBox.Show($"Ошибка загрузки информации по заявке: {ex.Message}");
         }
     }
+
+    private async Task<string> LoadProfileNameAsync(Guid profileId)
+    {
+        var profile = await _supabase
+            .From<Profile>()
+            .Filter("id", Postgrest.Constants.Operator.Equals, profileId.ToString())
+            .Single();
+
+        return profile?.Name ?? "Не найден";
+    }
+
+    private async Task<Equipment?> LoadEquipmentAsync(Guid equipmentId)
+    {
+        return await _supabase
+            .From<Equipment>()
+            .Filter("id", Postgrest.Constants.Operator.Equals, equipmentId.ToString())
+            .Single();
+    }
+
+    private static string GetEquipmentDisplayName(Equipment? equipment)
+    {
+        if (equipment == null)
+        {
+            return "Оборудование не найдено";
+        }
+
+        return string.IsNullOrWhiteSpace(equipment.FullDisplayName)
+            ? equipment.Model
+            : equipment.FullDisplayName;
+    }
+
+    private static string GetEquipmentInfo(Equipment? equipment)
+    {
+        if (equipment == null)
+        {
+            return string.Empty;
+        }
+
+        var values = new[]
+        {
+            string.IsNullOrWhiteSpace(equipment.InventoryNumber) ? null : $"Инв. №: {equipment.InventoryNumber}",
+            string.IsNullOrWhiteSpace(equipment.SerialNumber) ? null : $"Серийный №: {equipment.SerialNumber}",
+            string.IsNullOrWhiteSpace(equipment.Status) ? null : $"Статус: {equipment.Status}"
+        };
+
+        return string.Join(" · ", values.Where(value => value != null));
+    }
+
+    private static string GetStatusDisplayName(string? status) => status switch
+    {
+        "new" => "Открыта",
+        "in_progress" => "В работе",
+        "closed" => "Закрыта",
+        _ => string.IsNullOrWhiteSpace(status) ? "Не указан" : status
+    };
+
+    private async void LoadMessages()
+    {
+        try
+        {
+            var response = await _supabase.From<ChatMessage>()
+                .Filter("request_id", Postgrest.Constants.Operator.Equals, _currentRequest.Id.ToString())
+                .Order("created_at", Postgrest.Constants.Ordering.Ascending)
+                .Get();
+
+            var messages = response.Models.Select(msg => new UiChatMessage
+            {
+                Id = msg.Id,
+                RequestId = msg.RequestId,
+                SenderId = msg.SenderId,
+                MessageText = msg.MessageText,
+                CreatedAt = msg.CreatedAt,
+                IsOwnMessage = msg.SenderId == _profile.Id
+            }).ToList();
+
+            MessagesList.ItemsSource = messages;
+            ChatScroller.ScrollToEnd();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Ошибка загрузки чата: " + ex.Message);
+        }
+    }
+
+    private async void BtnSendMessage_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(TxtNewMessage.Text))
+        {
+            return;
+        }
+
+        var msg = new ChatMessage
+        {
+            RequestId = _currentRequest.Id,
+            SenderId = _profile.Id,
+            MessageText = TxtNewMessage.Text.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _supabase.From<ChatMessage>().Insert(msg);
+        TxtNewMessage.Clear();
+        LoadMessages();
+    }
+
+    private async void BtnComplete_Click(object sender, RoutedEventArgs e)
+    {
+        var now = DateTime.UtcNow;
+        await _supabase.From<RepairRequest>()
+            .Where(x => x.Id == _currentRequest.Id)
+            .Set(x => x.CompletedAt, now)
+            .Set(x => x.Status, "closed")
+            .Update();
+
+        _currentRequest.CompletedAt = now;
+        _currentRequest.Status = "closed";
+        LoadRequestDetails();
+        MessageBox.Show("Заявка успешно завершена!");
+        _close();
+    }
+
+    private async void BtnRefuse_OnClick(object sender, RoutedEventArgs e)
+    {
+        await _supabase.From<RepairRequest>()
+            .Where(r => r.Id == _currentRequest.Id)
+            .Set(r => r.TechnicianId, null)
+            .Set(r => r.Status, "new")
+            .Update();
+
+        _close();
+    }
+}

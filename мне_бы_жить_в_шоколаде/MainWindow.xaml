@@ -6,12 +6,11 @@
         Background="{DynamicResource MdSurface}">
 
     <Window.Resources>
-
-        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-            <Setter Property="Height" Value="56"/>
-            <Setter Property="Margin" Value="12,16,12,0"/>
-            <Setter Property="Background" Value="{DynamicResource MdTertiary}"/>
-            <Setter Property="Foreground" Value="#31110E"/>
+        <Style x:Key="SidebarActionButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Margin" Value="12,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="16,0"/>
         </Style>
     </Window.Resources>
 
@@ -22,54 +21,80 @@
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="{DynamicResource MdSurfaceContainer}" BorderThickness="0">
-            <StackPanel Margin="0,24,0,0">
-                <TextBlock Text="EduRepair" 
-                           Foreground="{DynamicResource MdPrimary}" 
-                           FontSize="24" FontWeight="Bold" 
-                           Margin="28,0,0,24" HorizontalAlignment="Left"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Margin="28,0,0,0" Grid.Column="0">
-                        <TextBlock x:Name="NameText" Text="Василий" TextWrapping="Wrap" Foreground="{DynamicResource MdOnSurface}" FontSize="16" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="RoleText" Text="Technicial" Foreground="{DynamicResource MdOnSurfaceVariant}" FontSize="14" Margin="0,4,0,0"/>
+            <DockPanel Margin="0,24,0,16" LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="EduRepair"
+                               Foreground="{DynamicResource MdPrimary}"
+                               FontSize="24" FontWeight="Bold"
+                               Margin="28,0,28,24" HorizontalAlignment="Left"/>
+
+                    <Border Margin="16,0,16,8"
+                            Background="{DynamicResource MdSurfaceContainerHigh}"
+                            CornerRadius="14"
+                            Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock x:Name="NameText" Text="Загрузка..." TextWrapping="Wrap" Foreground="{DynamicResource MdOnSurface}" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="RoleText" Text="" Foreground="{DynamicResource MdOnSurfaceVariant}" FontSize="14" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Background="{DynamicResource MdTertiary}"
+                                    Content="Выход"
+                                    Click="ExitButton_Click"
+                                    Margin="12,0,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Style="{StaticResource NavSectionHeader}" Text="Заявки"/>
+
+                    <RadioButton x:Name="OpenRequests"
+                                 Content="Открытые заявки"
+                                 GroupName="Nav"
+                                 IsChecked="True"
+                                 Style="{StaticResource MenuButton}"
+                                 Click="OpenRequests_Click"/>
+
+                    <RadioButton x:Name="AcceptedRequests"
+                                 Content="Принятые заявки"
+                                 GroupName="Nav"
+                                 Style="{StaticResource MenuButton}"
+                                 Click="AcceptedRequests_Click"/>
+
+                    <RadioButton x:Name="ArchivedRequests"
+                                 Content="Архив заявок"
+                                 GroupName="Nav"
+                                 Style="{StaticResource MenuButton}"
+                                 Click="ArchivedRequests_Click"/>
+
+                    <Button x:Name="BtnAddRequest"
+                            Content="+ Новая заявка"
+                            Style="{StaticResource SidebarActionButton}"
+                            Click="BtnAddRequest_Click"/>
+
+                    <StackPanel x:Name="AdminPanel" Visibility="Collapsed">
+                        <TextBlock Style="{StaticResource NavSectionHeader}" Text="Администрирование"/>
+                        <RadioButton x:Name="UsersControl"
+                                     Content="Пользователи"
+                                     GroupName="Nav"
+                                     Style="{StaticResource MenuButton}"
+                                     Click="UsersControl_Click"/>
+                        <RadioButton x:Name="EquipmentsControl"
+                                     Content="Оборудование"
+                                     GroupName="Nav"
+                                     Style="{StaticResource MenuButton}"
+                                     Click="EquipmentsControl_Click"/>
                     </StackPanel>
-                    <Button Style="{StaticResource PrimaryButton}" Background="{DynamicResource MdTertiary}" Grid.Column="1" Content="Выход" Click="ExitButton_Click" Margin="20, 0, 0, 0"/>
-                </Grid>
-
-                <Separator Margin="24,8" Background="{DynamicResource MdSurfaceContainerHigh}" Height="1"/>
-
-                <RadioButton x:Name="OpenRequests" 
-                    Content="Открытые заявки" 
-                    GroupName="Nav"
-                    IsChecked="True"
-                    Style="{StaticResource MenuButton}" 
-                    Click="OpenRequests_Click"/>
-
-                <RadioButton x:Name="AcceptedRequests" 
-                    Content="Принятые заявки" 
-                    GroupName="Nav"
-                    Style="{StaticResource MenuButton}" 
-                    Click="AcceptedRequests_Click"/>
-
-                <RadioButton x:Name="ArchivedRequests" 
-                    Content="Архив заявок" 
-                    GroupName="Nav"
-                    Style="{StaticResource MenuButton}" 
-                    Click="ArchivedRequests_Click"/>
-
-                <Separator Margin="24,8" Background="{DynamicResource MdSurfaceContainerHigh}" Height="1"/>
-
-                <Button x:Name="BtnAddRequest" Content="+ Новая заявка" 
-                        Style="{StaticResource AccentButton}" 
-                        Click="BtnAddRequest_Click"/>
-            </StackPanel>
+                </StackPanel>
+            </DockPanel>
         </Border>
 
         <Border Grid.Column="1" Background="{DynamicResource MdSurface}" CornerRadius="24,0,0,0" Margin="0">
-            <Frame x:Name="NavigationHost" />
+            <Frame x:Name="NavigationHost" NavigationUIVisibility="Hidden" />
         </Border>
     </Grid>
 </Window>

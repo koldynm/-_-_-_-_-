@@ -1,34 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Automation;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using мне_бы_жить_в_шоколаде.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace мне_бы_жить_в_шоколаде.Pages
 {
     public partial class RequestsList : Page
     {
-        private Supabase.Client _supabase;
-        private Profile _profile;
-        private Action<RepairRequest> _editRequest;
-        private Action<RepairRequest> _controlRequest;
+        private readonly Supabase.Client _supabase;
+        private readonly Profile _profile;
+        private readonly Action<RepairRequest> _editRequest;
+        private readonly Action<RepairRequest> _controlRequest;
 
         private string filterStatus = "new";
 
-        public async void SetFilterStatus(string filterStatus)
+        public void SetFilterStatus(string filterStatus)
         {
             this.filterStatus = filterStatus;
             LoadData();
@@ -37,10 +22,10 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
         private void UpdateUI()
         {
-            TakeRequestButton.Visibility = (_profile.Role == "technician" && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
+            TakeRequestButton.Visibility = (AppRoles.IsTechnician(_profile.Role) && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
             ControlRequestButton.Visibility = (filterStatus == "in_progress") ? Visibility.Visible : Visibility.Collapsed;
-            EditRequestButton.Visibility = (_profile.Role == "admin") ? Visibility.Visible : Visibility.Collapsed;
-            DeleteRequestButton.Visibility = (_profile.Role == "admin") ? Visibility.Visible : Visibility.Collapsed;
+            EditRequestButton.Visibility = AppRoles.IsAdmin(_profile.Role) ? Visibility.Visible : Visibility.Collapsed;
+            DeleteRequestButton.Visibility = AppRoles.IsAdmin(_profile.Role) ? Visibility.Visible : Visibility.Collapsed;
 
 
         }
@@ -103,7 +88,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
             }
         }
         
-        private async void EditRequestButton_Click(object sender, RoutedEventArgs e)
+        private void EditRequestButton_Click(object sender, RoutedEventArgs e)
         {
 
             if (RequestsGrid.SelectedItem is RepairRequest request)

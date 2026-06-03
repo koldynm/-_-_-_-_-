@@ -5,85 +5,99 @@ using мне_бы_жить_в_шоколаде.Pages;
 
 namespace мне_бы_жить_в_шоколаде
 {
-    
     public partial class MainWindow : Window
     {
-        private Supabase.Client _supabase;
-        private Session _session;
-        private Pages.RequestsList requestsList;
-        private Profile? currentProfile;
-
+        private readonly Supabase.Client _supabase;
+        private readonly Session _session;
+        private RequestsList? _requestsList;
+        private Profile? _currentProfile;
 
         public MainWindow(Supabase.Client supabase, Session session)
         {
             InitializeComponent();
             _supabase = supabase;
             _session = session;
-            init();
+            _ = InitializeAsync();
         }
 
-        private async void init()
+        private async Task InitializeAsync()
         {
+            await LoadCurrentUserAsync();
 
-            await ListenUser();
-
-            requestsList = new Pages.RequestsList(
-                _supabase, 
-                currentProfile, 
-                (r => 
+            if (_currentProfile == null)
             {
-                var Page = new EditRequest(r, _supabase, (u =>
-                {
-                    NavigationHost.Navigate(requestsList);
-                    if (u) requestsList.LoadData();
-                }));
-                NavigationHost.Navigate(Page);
-            }),
-                (r =>
-                {
-                    var page = new RequestControl(_supabase, r, currentProfile, (() =>
-                    {
-                        NavigationHost.Navigate(requestsList);
-                        requestsList.LoadData();
-                    }));
-                    NavigationHost.Navigate(page);
-                }));
-            NavigationHost.Navigate(requestsList);
+                return;
+            }
+
+            AdminPanel.Visibility = AppRoles.IsAdmin(_currentProfile.Role)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            _requestsList = CreateRequestsList();
+            NavigationHost.Navigate(_requestsList);
         }
 
-
-        private async Task ListenUser()
+        private RequestsList CreateRequestsList()
         {
+            return new RequestsList(
+                _supabase,
+                _currentProfile!,
+                request => NavigateToEditRequest(request),
+                request => NavigateToRequestControl(request));
+        }
 
+        private void NavigateToEditRequest(RepairRequest request)
+        {
+            var page = new EditRequest(request, _supabase, updated =>
+            {
+                NavigateToRequests();
+
+                if (updated)
+                {
+                    _requestsList?.LoadData();
+                }
+            });
+
+            NavigationHost.Navigate(page);
+        }
+
+        private void NavigateToRequestControl(RepairRequest request)
+        {
+            var page = new RequestControl(_supabase, request, _currentProfile!, () =>
+            {
+                NavigateToRequests();
+                _requestsList?.LoadData();
+            });
+
+            NavigationHost.Navigate(page);
+        }
+
+        private void NavigateToRequests()
+        {
+            if (_requestsList == null)
+            {
+                return;
+            }
+
+            NavigationHost.Navigate(_requestsList);
+        }
+
+        private async Task LoadCurrentUserAsync()
+        {
             try
             {
-                currentProfile = await _supabase
-                    .From<Profile>() 
+                _currentProfile = await _supabase
+                    .From<Profile>()
                     .Filter("id", Postgrest.Constants.Operator.Equals, _session.User.Id)
                     .Single();
-               
 
-                if (currentProfile == null)
+                if (_currentProfile == null)
                 {
-                    throw new Exception("qwrtyuiop");
+                    throw new InvalidOperationException("Профиль пользователя не найден.");
                 }
 
-                NameText.Text = currentProfile.Name;
-                string roleName = "";
-                switch (currentProfile.Role)
-                {
-                    case "requster":
-                        roleName = "Пользователь";
-                        break;
-                    case "technician":
-                        roleName = "Техник";
-                        break;
-                    case "admin":
-                        roleName = "Администратор";
-                        break;
-                }
-
-                RoleText.Text = roleName;
+                NameText.Text = _currentProfile.Name;
+                RoleText.Text = AppRoles.ToDisplayName(_currentProfile.Role);
             }
             catch (Exception ex)
             {
@@ -91,37 +105,84 @@ namespace мне_бы_жить_в_шоколаде
             }
         }
 
-
         private void BtnAddRequest_Click(object sender, RoutedEventArgs e)
         {
-            OpenRequests.IsChecked = false;
-            AcceptedRequests.IsChecked = false;
-            ArchivedRequests.IsChecked = false;
+            ClearNavigationSelection();
 
-            var addPage = new Pages.AddRequest(_supabase, (updated =>
+            var addPage = new AddRequest(_supabase, updated =>
             {
-                requestsList.LoadData();
-                NavigationHost.Navigate(requestsList);
+                _requestsList?.LoadData();
+                NavigateToRequests();
                 OpenRequests.IsChecked = true;
-            }));
+            });
+
             NavigationHost.Navigate(addPage);
         }
 
         private void AcceptedRequests_Click(object sender, RoutedEventArgs e)
         {
-            requestsList.SetFilterStatus("in_progress");
+            ShowRequestsByStatus("in_progress");
         }
 
         private void OpenRequests_Click(object sender, RoutedEventArgs e)
         {
-            requestsList.SetFilterStatus("new");
+            ShowRequestsByStatus("new");
         }
 
         private void ArchivedRequests_Click(object sender, RoutedEventArgs e)
         {
-
-            requestsList.SetFilterStatus("closed");
+            ShowRequestsByStatus("closed");
         }
+
+        private void ShowRequestsByStatus(string status)
+        {
+            NavigateToRequests();
+            _requestsList?.SetFilterStatus(status);
+        }
+
+        private void UsersControl_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureAdminAccess())
+            {
+                return;
+            }
+
+            NavigationHost.Navigate(new UsersControl(_supabase));
+        }
+
+        private void EquipmentsControl_Click(object sender, RoutedEventArgs e)
+        {
+            if (!EnsureAdminAccess())
+            {
+                return;
+            }
+
+            NavigationHost.Navigate(new EquipmentsControl(_supabase));
+        }
+
+        private bool EnsureAdminAccess()
+        {
+            if (AppRoles.IsAdmin(_currentProfile?.Role))
+            {
+                return true;
+            }
+
+            MessageBox.Show("Раздел доступен только администратору.");
+            ClearNavigationSelection();
+            OpenRequests.IsChecked = true;
+            ShowRequestsByStatus("new");
+            return false;
+        }
+
+        private void ClearNavigationSelection()
+        {
+            OpenRequests.IsChecked = false;
+            AcceptedRequests.IsChecked = false;
+            ArchivedRequests.IsChecked = false;
+            UsersControl.IsChecked = false;
+            EquipmentsControl.IsChecked = false;
+        }
+
         private async void ExitButton_Click(object sender, RoutedEventArgs e)
         {
             try
