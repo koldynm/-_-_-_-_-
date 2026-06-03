@@ -1,0 +1,83 @@
+﻿<Page x:Class="мне_бы_жить_в_шоколаде.Pages.EquipmentsControl"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Оборудование">
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <StackPanel>
+                <TextBlock Text="Оборудование"
+                           FontSize="32"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource MdOnSurface}"/>
+                <TextBlock Text="Административный просмотр и управление статусом оборудования"
+                           FontSize="14"
+                           Foreground="{DynamicResource MdOnSurfaceVariant}"
+                           Margin="2,4,0,0"/>
+            </StackPanel>
+
+            <Button Content="Обновить"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Click="Refresh_Click"
+                    Style="{StaticResource PrimaryButton}"
+                    Width="140" Height="44"/>
+        </Grid>
+
+        <Border Grid.Row="1"
+                CornerRadius="12"
+                Background="{DynamicResource MdSurfaceContainer}"
+                BorderBrush="{DynamicResource MdSurfaceContainerHigh}"
+                BorderThickness="1"
+                ClipToBounds="True">
+            <DataGrid x:Name="EquipmentsGrid"
+                      AutoGenerateColumns="False"
+                      Style="{StaticResource ModernDataGrid}"
+                      ColumnHeaderStyle="{StaticResource MdDataGridColumnHeader}"
+                      CanUserAddRows="False"
+                      RowHeight="52"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="{DynamicResource MdSurfaceContainerHigh}"
+                      SelectionChanged="EquipmentsGrid_SelectionChanged"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ИНВ. №" Binding="{Binding InventoryNumber}" Width="140"/>
+                    <DataGridTextColumn Header="МОДЕЛЬ" Binding="{Binding Model}" Width="*"/>
+                    <DataGridTextColumn Header="СЕРИЙНЫЙ №" Binding="{Binding SerialNumber}" Width="180"/>
+                    <DataGridTextColumn Header="СТАТУС" Binding="{Binding Status}" Width="140"/>
+                    <DataGridTextColumn Header="СОЗДАНО" Binding="{Binding CreatedAt, StringFormat=\{0:dd.MM.yy\}}" Width="120"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,24,0,0">
+            <ComboBox x:Name="StatusCombo"
+                      Width="220"
+                      Height="40"
+                      SelectedValuePath="Tag"
+                      Style="{StaticResource ModernComboBox}">
+                <ComboBoxItem Content="Активно" Tag="active"/>
+                <ComboBoxItem Content="На ремонте" Tag="repair"/>
+                <ComboBoxItem Content="Списано" Tag="retired"/>
+            </ComboBox>
+            <Button Content="Сохранить статус"
+                    Click="SaveStatus_Click"
+                    Style="{StaticResource PrimaryButton}"
+                    Width="190"
+                    Height="40"
+                    Margin="12,0,0,0"/>
+            <Button Content="Удалить"
+                    Click="Delete_Click"
+                    Style="{StaticResource PrimaryButton}"
+                    Background="{DynamicResource MdTertiary}"
+                    Width="130"
+                    Height="40"
+                    Margin="12,0,0,0"/>
+        </StackPanel>
+    </Grid>
+</Page>

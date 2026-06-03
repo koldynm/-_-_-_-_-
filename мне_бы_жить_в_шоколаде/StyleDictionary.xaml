@@ -280,19 +280,27 @@
         </Setter>
     </Style>
 
+    <Style x:Key="NavSectionHeader" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource MdOnSurfaceVariant}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="Margin" Value="28,16,28,8"/>
+    </Style>
+
     <!-- Кнопки меню (Боковая панель) -->
     <Style x:Key="MenuButton" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource MdOnSurfaceVariant}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="Normal"/>
-        <Setter Property="Height" Value="40"/>
-        <Setter Property="Margin" Value="8,2"/>
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="Margin" Value="12,4"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="12">
                         <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0"/>
                     </Border>
                     <ControlTemplate.Triggers>
