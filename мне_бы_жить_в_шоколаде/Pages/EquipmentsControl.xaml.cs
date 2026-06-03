@@ -103,6 +103,7 @@ public partial class EquipmentsControl : Page
 
     private void FillEditor(EquipmentRow equipment)
     {
+        ShowEditor();
         EquipmentEditorHintText.Text = "Измените данные оборудования и нажмите «Сохранить»";
         EquipmentIdText.Text = equipment.Id.ToString();
         InventoryNumberText.Text = equipment.InventoryNumber;
@@ -119,10 +120,16 @@ public partial class EquipmentsControl : Page
     private void ClearEditor(bool createMode)
     {
         _isCreateMode = createMode;
-        EquipmentEditorHintText.Text = createMode
-            ? "Заполните данные нового оборудования"
-            : "Выберите запись или нажмите «Добавить»";
-        EquipmentIdText.Text = createMode ? "Будет создан автоматически" : string.Empty;
+
+        if (!createMode)
+        {
+            ShowPlaceholder();
+            return;
+        }
+
+        ShowEditor();
+        EquipmentEditorHintText.Text = "Заполните данные нового оборудования";
+        EquipmentIdText.Text = "Будет создан автоматически";
         InventoryNumberText.Text = string.Empty;
         TypeCombo.SelectedIndex = 0;
         ModelText.Text = string.Empty;
@@ -131,7 +138,28 @@ public partial class EquipmentsControl : Page
         StatusCombo.SelectedValue = "in_stock";
         PhotoUrlText.Text = string.Empty;
         CreatedAtText.Text = string.Empty;
-        SetEditorEnabled(createMode);
+        SetEditorEnabled(true);
+    }
+
+    private void ShowEditor()
+    {
+        EquipmentPlaceholder.Visibility = Visibility.Collapsed;
+        EquipmentEditorPanel.Visibility = Visibility.Visible;
+    }
+
+    private void ShowPlaceholder()
+    {
+        EquipmentPlaceholder.Visibility = Visibility.Visible;
+        EquipmentEditorPanel.Visibility = Visibility.Collapsed;
+        EquipmentIdText.Text = string.Empty;
+        InventoryNumberText.Text = string.Empty;
+        TypeCombo.SelectedIndex = -1;
+        ModelText.Text = string.Empty;
+        SerialNumberText.Text = string.Empty;
+        LocationCombo.SelectedIndex = -1;
+        StatusCombo.SelectedIndex = -1;
+        PhotoUrlText.Text = string.Empty;
+        CreatedAtText.Text = string.Empty;
     }
 
     private void SetEditorEnabled(bool isEnabled)
