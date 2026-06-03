@@ -13,6 +13,7 @@ public partial class UsersControl : Page
     {
         InitializeComponent();
         _supabase = supabase;
+        ClearEditor();
         LoadProfiles();
     }
 
@@ -20,6 +21,7 @@ public partial class UsersControl : Page
     {
         try
         {
+            var selectedId = (UsersGrid.SelectedItem as ProfileRow)?.Id;
             var response = await _supabase
                 .From<Profile>()
                 .Order("full_name", Postgrest.Constants.Ordering.Ascending)
@@ -27,6 +29,16 @@ public partial class UsersControl : Page
 
             _profiles = response.Models.Select(ProfileRow.FromProfile).ToList();
             UsersGrid.ItemsSource = _profiles;
+
+            if (selectedId.HasValue)
+            {
+                UsersGrid.SelectedItem = _profiles.FirstOrDefault(profile => profile.Id == selectedId.Value);
+            }
+
+            if (UsersGrid.SelectedItem is not ProfileRow)
+            {
+                ClearEditor();
+            }
         }
         catch (Exception ex)
         {
@@ -43,17 +55,61 @@ public partial class UsersControl : Page
     {
         if (UsersGrid.SelectedItem is ProfileRow profile)
         {
-            RoleCombo.SelectedValue = AppRoles.IsRequester(profile.Role)
-                ? AppRoles.Requester
-                : profile.Role;
+            FillEditor(profile);
+        }
+        else
+        {
+            ClearEditor();
         }
     }
 
-    private async void SaveRole_Click(object sender, RoutedEventArgs e)
+    private void FillEditor(ProfileRow profile)
+    {
+        EditorHintText.Text = "Измените данные пользователя и нажмите «Сохранить»";
+        UserIdText.Text = profile.Id.ToString();
+        NameText.Text = profile.Name;
+        RoleCombo.SelectedValue = AppRoles.IsRequester(profile.Role)
+            ? AppRoles.Requester
+            : profile.Role;
+        UpdatedAtText.Text = profile.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+        SetEditorEnabled(true);
+    }
+
+    private void ClearEditor()
+    {
+        EditorHintText.Text = "Выберите пользователя в таблице слева";
+        UserIdText.Text = string.Empty;
+        NameText.Text = string.Empty;
+        RoleCombo.SelectedIndex = -1;
+        UpdatedAtText.Text = string.Empty;
+        SetEditorEnabled(false);
+    }
+
+    private void SetEditorEnabled(bool isEnabled)
+    {
+        NameText.IsEnabled = isEnabled;
+        RoleCombo.IsEnabled = isEnabled;
+    }
+
+    private void ResetUserForm_Click(object sender, RoutedEventArgs e)
+    {
+        if (UsersGrid.SelectedItem is ProfileRow profile)
+        {
+            FillEditor(profile);
+        }
+    }
+
+    private async void SaveUser_Click(object sender, RoutedEventArgs e)
     {
         if (UsersGrid.SelectedItem is not ProfileRow profile)
         {
             MessageBox.Show("Выберите пользователя.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NameText.Text))
+        {
+            MessageBox.Show("Укажите имя пользователя.");
             return;
         }
 
@@ -67,16 +123,17 @@ public partial class UsersControl : Page
         {
             await _supabase.From<Profile>()
                 .Where(user => user.Id == profile.Id)
+                .Set(user => user.Name, NameText.Text.Trim())
                 .Set(user => user.Role, role)
                 .Set(user => user.UpdatedAt, DateTime.UtcNow)
                 .Update();
 
             LoadProfiles();
-            MessageBox.Show("Роль пользователя обновлена.");
+            MessageBox.Show("Профиль пользователя обновлен.");
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Ошибка сохранения роли: {ex.Message}");
+            MessageBox.Show($"Ошибка сохранения пользователя: {ex.Message}");
         }
     }
 
