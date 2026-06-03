@@ -8,11 +8,13 @@ public partial class UsersControl : Page
 {
     private readonly Supabase.Client _supabase;
     private List<ProfileRow> _profiles = [];
+    private bool _isCreateMode;
 
     public UsersControl(Supabase.Client supabase)
     {
         InitializeComponent();
         _supabase = supabase;
+        ClearEditor(false);
         LoadProfiles();
     }
 
@@ -20,6 +22,7 @@ public partial class UsersControl : Page
     {
         try
         {
+            var selectedId = (UsersGrid.SelectedItem as ProfileRow)?.Id;
             var response = await _supabase
                 .From<Profile>()
                 .Order("full_name", Postgrest.Constants.Ordering.Ascending)
@@ -27,6 +30,16 @@ public partial class UsersControl : Page
 
             _profiles = response.Models.Select(ProfileRow.FromProfile).ToList();
             UsersGrid.ItemsSource = _profiles;
+
+            if (selectedId.HasValue && !_isCreateMode)
+            {
+                UsersGrid.SelectedItem = _profiles.FirstOrDefault(profile => profile.Id == selectedId.Value);
+            }
+
+            if (UsersGrid.SelectedItem is not ProfileRow && !_isCreateMode)
+            {
+                ClearEditor(false);
+            }
         }
         catch (Exception ex)
         {
@@ -39,21 +52,98 @@ public partial class UsersControl : Page
         LoadProfiles();
     }
 
+    private void AddUser_Click(object sender, RoutedEventArgs e)
+    {
+        UsersGrid.SelectedItem = null;
+        ClearEditor(true);
+    }
+
     private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (UsersGrid.SelectedItem is ProfileRow profile)
         {
-            RoleCombo.SelectedValue = AppRoles.IsRequester(profile.Role)
-                ? AppRoles.Requester
-                : profile.Role;
+            _isCreateMode = false;
+            FillEditor(profile);
+        }
+        else if (!_isCreateMode)
+        {
+            ClearEditor(false);
         }
     }
 
-    private async void SaveRole_Click(object sender, RoutedEventArgs e)
+    private void FillEditor(ProfileRow profile)
     {
-        if (UsersGrid.SelectedItem is not ProfileRow profile)
+        ShowEditor();
+        EditorHintText.Text = "Измените данные пользователя и нажмите «Сохранить»";
+        UserIdText.IsReadOnly = true;
+        UserIdText.Text = profile.Id.ToString();
+        NameText.Text = profile.Name;
+        RoleCombo.SelectedValue = AppRoles.IsRequester(profile.Role)
+            ? AppRoles.Requester
+            : profile.Role;
+        UpdatedAtText.Text = profile.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+    }
+
+    private void ClearEditor(bool createMode)
+    {
+        _isCreateMode = createMode;
+
+        if (!createMode)
         {
-            MessageBox.Show("Выберите пользователя.");
+            ShowPlaceholder();
+            return;
+        }
+
+        ShowEditor();
+        EditorHintText.Text = "Заполните данные нового пользователя";
+        UserIdText.IsReadOnly = false;
+        UserIdText.Text = string.Empty;
+        NameText.Text = string.Empty;
+        RoleCombo.SelectedValue = AppRoles.Requester;
+        UpdatedAtText.Text = "Будет заполнено при сохранении";
+    }
+
+    private void ShowEditor()
+    {
+        UserPlaceholder.Visibility = Visibility.Collapsed;
+        UserEditorPanel.Visibility = Visibility.Visible;
+    }
+
+    private void ShowPlaceholder()
+    {
+        UserPlaceholder.Visibility = Visibility.Visible;
+        UserEditorPanel.Visibility = Visibility.Collapsed;
+        UserIdText.Text = string.Empty;
+        NameText.Text = string.Empty;
+        RoleCombo.SelectedIndex = -1;
+        UpdatedAtText.Text = string.Empty;
+    }
+
+    private void ResetUserForm_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isCreateMode)
+        {
+            ClearEditor(true);
+            return;
+        }
+
+        if (UsersGrid.SelectedItem is ProfileRow profile)
+        {
+            FillEditor(profile);
+        }
+    }
+
+    private async void SaveUser_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_isCreateMode && UsersGrid.SelectedItem is not ProfileRow)
+        {
+            MessageBox.Show("Выберите пользователя или нажмите «Добавить».");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NameText.Text))
+        {
+            MessageBox.Show("Укажите имя пользователя.");
             return;
         }
 
@@ -65,18 +155,43 @@ public partial class UsersControl : Page
 
         try
         {
-            await _supabase.From<Profile>()
-                .Where(user => user.Id == profile.Id)
-                .Set(user => user.Role, role)
-                .Set(user => user.UpdatedAt, DateTime.UtcNow)
-                .Update();
+            if (_isCreateMode)
+            {
+                if (!Guid.TryParse(UserIdText.Text, out var userId))
+                {
+                    MessageBox.Show("Укажите корректный UUID пользователя.");
+                    return;
+                }
+
+                var newProfile = new Profile
+                {
+                    Id = userId,
+                    Name = NameText.Text.Trim(),
+                    Role = role,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _supabase.From<Profile>().Insert(newProfile);
+                _isCreateMode = false;
+                MessageBox.Show("Пользователь добавлен.");
+            }
+            else if (UsersGrid.SelectedItem is ProfileRow profile)
+            {
+                await _supabase.From<Profile>()
+                    .Where(user => user.Id == profile.Id)
+                    .Set(user => user.Name, NameText.Text.Trim())
+                    .Set(user => user.Role, role)
+                    .Set(user => user.UpdatedAt, DateTime.UtcNow)
+                    .Update();
+
+                MessageBox.Show("Профиль пользователя обновлен.");
+            }
 
             LoadProfiles();
-            MessageBox.Show("Роль пользователя обновлена.");
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Ошибка сохранения роли: {ex.Message}");
+            MessageBox.Show($"Ошибка сохранения пользователя: {ex.Message}");
         }
     }
 

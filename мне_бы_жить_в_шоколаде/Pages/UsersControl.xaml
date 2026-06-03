@@ -6,7 +6,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="0,0,0,24">
@@ -15,61 +14,135 @@
                            FontSize="32"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource MdOnSurface}"/>
-                <TextBlock Text="Административная панель профилей и ролей"
+                <TextBlock Text="Полноценное редактирование профилей и ролей"
                            FontSize="14"
                            Foreground="{DynamicResource MdOnSurfaceVariant}"
                            Margin="2,4,0,0"/>
             </StackPanel>
 
-            <Button Content="Обновить"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Click="Refresh_Click"
-                    Style="{StaticResource PrimaryButton}"
-                    Width="140" Height="44"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <Button Content="Добавить"
+                        Click="AddUser_Click"
+                        Style="{StaticResource PrimaryButton}"
+                        Width="140" Height="44"
+                        Margin="0,0,12,0"/>
+                <Button Content="Обновить"
+                        Click="Refresh_Click"
+                        Style="{StaticResource PrimaryButton}"
+                        Width="140" Height="44"/>
+            </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1"
-                CornerRadius="12"
-                Background="{DynamicResource MdSurfaceContainer}"
-                BorderBrush="{DynamicResource MdSurfaceContainerHigh}"
-                BorderThickness="1"
-                ClipToBounds="True">
-            <DataGrid x:Name="UsersGrid"
-                      AutoGenerateColumns="False"
-                      Style="{StaticResource ModernDataGrid}"
-                      ColumnHeaderStyle="{StaticResource MdDataGridColumnHeader}"
-                      CanUserAddRows="False"
-                      RowHeight="52"
-                      GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="{DynamicResource MdSurfaceContainerHigh}"
-                      SelectionChanged="UsersGrid_SelectionChanged"
-                      IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ИМЯ" Binding="{Binding Name}" Width="*"/>
-                    <DataGridTextColumn Header="РОЛЬ" Binding="{Binding RoleDisplayName}" Width="180"/>
-                    <DataGridTextColumn Header="ОБНОВЛЕН" Binding="{Binding UpdatedAt, StringFormat=\{0:dd.MM.yy HH:mm\}}" Width="160"/>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="240"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="420"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="1.1*" MinWidth="340"/>
+            </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,24,0,0">
-            <ComboBox x:Name="RoleCombo"
-                      Width="220"
-                      Height="40"
-                      SelectedValuePath="Tag"
-                      Style="{StaticResource ModernComboBox}">
-                <ComboBoxItem Content="Пользователь" Tag="requester"/>
-                <ComboBoxItem Content="Техник" Tag="technician"/>
-                <ComboBoxItem Content="Администратор" Tag="admin"/>
-            </ComboBox>
-            <Button Content="Сохранить роль"
-                    Click="SaveRole_Click"
-                    Style="{StaticResource PrimaryButton}"
-                    Width="180"
-                    Height="40"
-                    Margin="12,0,0,0"/>
-        </StackPanel>
+            <Border Grid.Column="0"
+                    CornerRadius="12"
+                    Background="{DynamicResource MdSurfaceContainer}"
+                    BorderBrush="{DynamicResource MdSurfaceContainerHigh}"
+                    BorderThickness="1"
+                    ClipToBounds="True">
+                <DataGrid x:Name="UsersGrid"
+                          AutoGenerateColumns="False"
+                          Style="{StaticResource ModernDataGrid}"
+                          ColumnHeaderStyle="{StaticResource MdDataGridColumnHeader}"
+                          CanUserAddRows="False"
+                          RowHeight="52"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="{DynamicResource MdSurfaceContainerHigh}"
+                          SelectionChanged="UsersGrid_SelectionChanged"
+                          IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ИМЯ" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="РОЛЬ" Binding="{Binding RoleDisplayName}" Width="170"/>
+                        <DataGridTextColumn Header="ОБНОВЛЕН" Binding="{Binding UpdatedAt, StringFormat=\{0:dd.MM.yy HH:mm\}}" Width="150"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="230"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <Border Grid.Column="2"
+                    CornerRadius="16"
+                    Padding="24"
+                    Background="{DynamicResource MdSurfaceContainer}"
+                    BorderBrush="{DynamicResource MdSurfaceContainerHigh}"
+                    BorderThickness="1">
+                <Grid>
+                    <StackPanel x:Name="UserPlaceholder"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Margin="24">
+                        <TextBlock Text="Выберите пользователя"
+                                   FontSize="22"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MdOnSurface}"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="Выберите пользователя в таблице слева или нажмите «Добавить», чтобы создать новую карточку."
+                                   FontSize="14"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   Foreground="{DynamicResource MdOnSurfaceVariant}"
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <ScrollViewer x:Name="UserEditorPanel" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Карточка пользователя"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource MdOnSurface}"/>
+                            <TextBlock x:Name="EditorHintText"
+                                       Text="Выберите пользователя в таблице слева"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource MdOnSurfaceVariant}"
+                                       Margin="0,4,0,22"/>
+
+                            <TextBlock Text="Идентификатор" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
+                            <TextBox x:Name="UserIdText" Style="{StaticResource ModernInput}" IsReadOnly="True" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="ФИО / отображаемое имя" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
+                            <TextBox x:Name="NameText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Роль" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
+                            <ComboBox x:Name="RoleCombo"
+                                      Height="40"
+                                      SelectedValuePath="Tag"
+                                      Style="{StaticResource ModernComboBox}"
+                                      Margin="0,0,0,16">
+                                <ComboBoxItem Content="Пользователь" Tag="requester"/>
+                                <ComboBoxItem Content="Техник" Tag="technician"/>
+                                <ComboBoxItem Content="Администратор" Tag="admin"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Последнее обновление" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
+                            <TextBox x:Name="UpdatedAtText" Style="{StaticResource ModernInput}" IsReadOnly="True" Margin="0,0,0,24"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="Сбросить"
+                                        Click="ResetUserForm_Click"
+                                        Height="40"
+                                        Background="Transparent"
+                                        Foreground="{DynamicResource MdOnSurfaceVariant}"/>
+                                <Button Grid.Column="2"
+                                        Content="Сохранить"
+                                        Click="SaveUser_Click"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Height="40"/>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
