@@ -147,6 +147,12 @@ public partial class UsersControl : Page
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(NameText.Text))
+        {
+            MessageBox.Show("Укажите имя пользователя.");
+            return;
+        }
+
         if (RoleCombo.SelectedValue is not string role)
         {
             MessageBox.Show("Выберите роль.");
