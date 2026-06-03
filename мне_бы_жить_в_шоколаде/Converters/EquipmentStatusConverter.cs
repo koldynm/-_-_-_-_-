@@ -11,6 +11,7 @@ public class EquipmentStatusConverter: IValueConverter
         {
             return status switch
             {
+                "active" => "Активен",
                 "repair" => "Ремонтируется",
                 "broken" => "Сломан",
                 "in_use" => "Используется",
