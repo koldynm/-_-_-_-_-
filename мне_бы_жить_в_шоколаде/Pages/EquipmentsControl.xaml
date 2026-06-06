@@ -65,7 +65,6 @@
                         <DataGridTextColumn Header="ИНВ. №" Binding="{Binding InventoryNumber}" Width="130"/>
                         <DataGridTextColumn Header="ТИП" Binding="{Binding TypeName}" Width="150"/>
                         <DataGridTextColumn Header="МОДЕЛЬ" Binding="{Binding Model}" Width="*"/>
-                        <DataGridTextColumn Header="СЕРИЙНЫЙ №" Binding="{Binding SerialNumber}" Width="150"/>
                         <DataGridTextColumn Header="ЛОКАЦИЯ" Binding="{Binding LocationName}" Width="150"/>
                         <DataGridTextColumn Header="СТАТУС" Binding="{Binding Status, Converter={StaticResource EquipmentStatusConverter}}" Width="135"/>
                     </DataGrid.Columns>
@@ -107,10 +106,7 @@
                                        FontSize="13"
                                        Foreground="{DynamicResource MdOnSurfaceVariant}"
                                        Margin="0,4,0,22"/>
-
-                            <TextBlock Text="Идентификатор" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
-                            <TextBox x:Name="EquipmentIdText" Style="{StaticResource ModernInput}" IsReadOnly="True" Margin="0,0,0,16"/>
-
+                            
                             <TextBlock Text="Инвентарный номер" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                             <TextBox x:Name="InventoryNumberText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
 
@@ -124,9 +120,6 @@
 
                             <TextBlock Text="Модель" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                             <TextBox x:Name="ModelText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
-
-                            <TextBlock Text="Серийный номер" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
-                            <TextBox x:Name="SerialNumberText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="Локация" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                             <ComboBox x:Name="LocationCombo"
@@ -142,15 +135,11 @@
                                       SelectedValuePath="Tag"
                                       Style="{StaticResource ModernComboBox}"
                                       Margin="0,0,0,16">
-                                <ComboBoxItem Content="Активен" Tag="active"/>
                                 <ComboBoxItem Content="Используется" Tag="in_use"/>
                                 <ComboBoxItem Content="Сломан" Tag="broken"/>
                                 <ComboBoxItem Content="Ремонтируется" Tag="repair"/>
                                 <ComboBoxItem Content="На складе" Tag="in_stock"/>
                             </ComboBox>
-
-                            <TextBlock Text="Ссылка на фото" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
-                            <TextBox x:Name="PhotoUrlText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="Создано" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                             <TextBox x:Name="CreatedAtText" Style="{StaticResource ModernInput}" IsReadOnly="True" Margin="0,0,0,24"/>
