@@ -75,8 +75,6 @@ public partial class UsersControl : Page
     {
         ShowEditor();
         EditorHintText.Text = "Измените данные пользователя и нажмите «Сохранить»";
-        UserIdText.IsReadOnly = true;
-        UserIdText.Text = profile.Id.ToString();
         NameText.Text = profile.Name;
         RoleCombo.SelectedValue = AppRoles.IsRequester(profile.Role)
             ? AppRoles.Requester
@@ -96,8 +94,6 @@ public partial class UsersControl : Page
 
         ShowEditor();
         EditorHintText.Text = "Заполните данные нового пользователя";
-        UserIdText.IsReadOnly = false;
-        UserIdText.Text = string.Empty;
         NameText.Text = string.Empty;
         RoleCombo.SelectedValue = AppRoles.Requester;
         UpdatedAtText.Text = "Будет заполнено при сохранении";
@@ -113,7 +109,6 @@ public partial class UsersControl : Page
     {
         UserPlaceholder.Visibility = Visibility.Visible;
         UserEditorPanel.Visibility = Visibility.Collapsed;
-        UserIdText.Text = string.Empty;
         NameText.Text = string.Empty;
         RoleCombo.SelectedIndex = -1;
         UpdatedAtText.Text = string.Empty;
@@ -163,15 +158,9 @@ public partial class UsersControl : Page
         {
             if (_isCreateMode)
             {
-                if (!Guid.TryParse(UserIdText.Text, out var userId))
-                {
-                    MessageBox.Show("Укажите корректный UUID пользователя.");
-                    return;
-                }
-
                 var newProfile = new Profile
                 {
-                    Id = userId,
+                    Id = Guid.NewGuid(),
                     Name = NameText.Text.Trim(),
                     Role = role,
                     UpdatedAt = DateTime.UtcNow

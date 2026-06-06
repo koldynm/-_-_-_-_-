@@ -60,7 +60,6 @@
                         <DataGridTextColumn Header="ИМЯ" Binding="{Binding Name}" Width="*"/>
                         <DataGridTextColumn Header="РОЛЬ" Binding="{Binding RoleDisplayName}" Width="170"/>
                         <DataGridTextColumn Header="ОБНОВЛЕН" Binding="{Binding UpdatedAt, StringFormat=\{0:dd.MM.yy HH:mm\}}" Width="150"/>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="230"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>
@@ -100,10 +99,7 @@
                                        FontSize="13"
                                        Foreground="{DynamicResource MdOnSurfaceVariant}"
                                        Margin="0,4,0,22"/>
-
-                            <TextBlock Text="Идентификатор" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
-                            <TextBox x:Name="UserIdText" Style="{StaticResource ModernInput}" IsReadOnly="True" Margin="0,0,0,16"/>
-
+                            
                             <TextBlock Text="ФИО / отображаемое имя" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                             <TextBox x:Name="NameText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
 

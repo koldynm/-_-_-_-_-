@@ -105,14 +105,11 @@ public partial class EquipmentsControl : Page
     {
         ShowEditor();
         EquipmentEditorHintText.Text = "Измените данные оборудования и нажмите «Сохранить»";
-        EquipmentIdText.Text = equipment.Id.ToString();
         InventoryNumberText.Text = equipment.InventoryNumber;
         TypeCombo.SelectedValue = equipment.TypeId;
         ModelText.Text = equipment.Model;
-        SerialNumberText.Text = equipment.SerialNumber;
         LocationCombo.SelectedValue = equipment.LocationId;
         StatusCombo.SelectedValue = equipment.Status;
-        PhotoUrlText.Text = equipment.PhotoUrl;
         CreatedAtText.Text = equipment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
         SetEditorEnabled(true);
     }
@@ -129,14 +126,11 @@ public partial class EquipmentsControl : Page
 
         ShowEditor();
         EquipmentEditorHintText.Text = "Заполните данные нового оборудования";
-        EquipmentIdText.Text = "Будет создан автоматически";
         InventoryNumberText.Text = string.Empty;
         TypeCombo.SelectedIndex = 0;
         ModelText.Text = string.Empty;
-        SerialNumberText.Text = string.Empty;
         LocationCombo.SelectedIndex = 0;
         StatusCombo.SelectedValue = "in_stock";
-        PhotoUrlText.Text = string.Empty;
         CreatedAtText.Text = string.Empty;
         SetEditorEnabled(true);
     }
@@ -151,14 +145,11 @@ public partial class EquipmentsControl : Page
     {
         EquipmentPlaceholder.Visibility = Visibility.Visible;
         EquipmentEditorPanel.Visibility = Visibility.Collapsed;
-        EquipmentIdText.Text = string.Empty;
         InventoryNumberText.Text = string.Empty;
         TypeCombo.SelectedIndex = -1;
         ModelText.Text = string.Empty;
-        SerialNumberText.Text = string.Empty;
         LocationCombo.SelectedIndex = -1;
         StatusCombo.SelectedIndex = -1;
-        PhotoUrlText.Text = string.Empty;
         CreatedAtText.Text = string.Empty;
     }
 
@@ -167,10 +158,8 @@ public partial class EquipmentsControl : Page
         InventoryNumberText.IsEnabled = isEnabled;
         TypeCombo.IsEnabled = isEnabled;
         ModelText.IsEnabled = isEnabled;
-        SerialNumberText.IsEnabled = isEnabled;
         LocationCombo.IsEnabled = isEnabled;
         StatusCombo.IsEnabled = isEnabled;
-        PhotoUrlText.IsEnabled = isEnabled;
     }
 
     private void ClearEquipmentForm_Click(object sender, RoutedEventArgs e)
@@ -217,7 +206,6 @@ public partial class EquipmentsControl : Page
         {
             var typeId = GetSelectedGuid(TypeCombo);
             var locationId = GetSelectedGuid(LocationCombo);
-            var photoUrl = string.IsNullOrWhiteSpace(PhotoUrlText.Text) ? null : PhotoUrlText.Text.Trim();
 
             if (_isCreateMode)
             {
@@ -226,10 +214,8 @@ public partial class EquipmentsControl : Page
                     InventoryNumber = InventoryNumberText.Text.Trim(),
                     TypeId = typeId,
                     Model = ModelText.Text.Trim(),
-                    SerialNumber = SerialNumberText.Text.Trim(),
                     LocationId = locationId,
                     Status = status,
-                    PhotoUrl = photoUrl,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -244,10 +230,8 @@ public partial class EquipmentsControl : Page
                     .Set(item => item.InventoryNumber, InventoryNumberText.Text.Trim())
                     .Set(item => item.TypeId, typeId)
                     .Set(item => item.Model, ModelText.Text.Trim())
-                    .Set(item => item.SerialNumber, SerialNumberText.Text.Trim())
                     .Set(item => item.LocationId, locationId)
                     .Set(item => item.Status, status)
-                    .Set(item => item.PhotoUrl, photoUrl)
                     .Update();
 
                 MessageBox.Show("Оборудование обновлено.");
