@@ -1,7 +1,9 @@
 ﻿using Supabase.Gotrue;
+using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using мне_бы_жить_в_шоколаде.Entities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace мне_бы_жить_в_шоколаде.Pages;
 
@@ -21,16 +23,29 @@ public partial class UsersControl : Page
     {
         try
         {
+            var adminAuth = await Globals.GetAdminAuth();
             var client = await Globals.GetClient();
-            var selectedId = (UsersGrid.SelectedItem as ProfileRow)?.Id;
+
+            var usersList = await adminAuth.ListUsers();
+            var users = usersList?.Users;
+
+            if (users is null) return;
+
+            var userLookup = users
+                .Where(u => Guid.TryParse(u.Id, out _))
+                .ToDictionary(u => Guid.Parse(u.Id));
+
             var response = await client
                 .From<Profile>()
                 .Order("full_name", Postgrest.Constants.Ordering.Ascending)
                 .Get();
 
-            _profiles = response.Models.Select(ProfileRow.FromProfile).ToList();
+            _profiles = response.Models
+                .Select(profile => ProfileRow.FromProfile(profile, userLookup.GetValueOrDefault(profile.Id)))
+                .ToList();
             UsersGrid.ItemsSource = _profiles;
 
+            var selectedId = (UsersGrid.SelectedItem as ProfileRow)?.Id;
             if (selectedId.HasValue && !_isCreateMode)
             {
                 UsersGrid.SelectedItem = _profiles.FirstOrDefault(profile => profile.Id == selectedId.Value);
@@ -75,8 +90,8 @@ public partial class UsersControl : Page
     {
         ShowEditor();
         EditorHintText.Text = "Измените данные пользователя и нажмите «Сохранить»";
-        EmailText.Text = string.Empty; // TODO
-        PasswordText.Text = string.Empty; // TODO
+        EmailText.Text = profile.Email;
+        PasswordText.Text = profile.Password;
         NameText.Text = profile.Name;
         RoleCombo.SelectedValue = AppRoles.IsRequester(profile.Role)
             ? AppRoles.Requester
@@ -148,19 +163,13 @@ public partial class UsersControl : Page
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(PasswordText.Text))
-        {
-            MessageBox.Show("Укажите пароль.");
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(NameText.Text))
         {
             MessageBox.Show("Укажите имя пользователя.");
             return;
         }
 
-        if (RoleCombo.SelectedValue is not string role)
+        if (RoleCombo.SelectedValue is not string)
         {
             MessageBox.Show("Выберите роль.");
             return;
@@ -168,37 +177,17 @@ public partial class UsersControl : Page
 
         try
         {
-            var adminAuth = await Globals.GetAdminAuth();
 
             if (_isCreateMode)
             {
-                await adminAuth.CreateUser(
-                    email: EmailText.Text,
-                    password: PasswordText.Text,
-                    attributes: new AdminUserAttributes
-                    {
-                        EmailConfirm = false,
-                        UserMetadata = new Dictionary<string, object>
-                        {
-                            { "full_name", NameText.Text.Trim() },
-                            { "role", role }
-                        }
-                    }
-                );
+                await createUser();
 
                 _isCreateMode = false;
                 MessageBox.Show("Пользователь добавлен.");
             }
             else if (UsersGrid.SelectedItem is ProfileRow profile)
             {
-                var client = await Globals.GetClient();
-
-                await client.From<Profile>()
-                    .Where(user => user.Id == profile.Id)
-                    .Set(user => user.Name, NameText.Text.Trim())
-                    .Set(user => user.Role, role)
-                    .Set(user => user.UpdatedAt, DateTime.UtcNow)
-                    .Update();
+                await updateUser(profile);
 
                 MessageBox.Show("Профиль пользователя обновлен.");
             }
@@ -211,17 +200,75 @@ public partial class UsersControl : Page
         }
     }
 
+    private async Task createUser()
+    {
+        if (RoleCombo.SelectedValue is not string role) return;
+
+        var adminAuth = await Globals.GetAdminAuth();
+
+        await adminAuth.CreateUser(
+            email: EmailText.Text,
+            password: PasswordText.Text,
+            attributes: new AdminUserAttributes
+            {
+                EmailConfirm = false,
+                UserMetadata = new Dictionary<string, object>
+                {
+                    { "full_name", NameText.Text.Trim() },
+                    { "role", role }
+                }
+            }
+        );
+    }
+
+    private async Task updateUser(ProfileRow profile)
+    {
+        if (RoleCombo.SelectedValue is not string role) return;
+
+        var client = await Globals.GetClient();
+        var adminAuth = await Globals.GetAdminAuth();
+
+        await client.From<Profile>()
+            .Where(user => user.Id == profile.Id)
+            .Set(user => user.Name, NameText.Text.Trim())
+            .Set(user => user.Role, role)
+            .Set(user => user.UpdatedAt, DateTime.UtcNow)
+            .Update();
+
+        var authAttributes = new AdminUserAttributes();
+        bool authNeedsUpdate = false;
+
+        if (!string.Equals(EmailText.Text.Trim(), profile.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            authAttributes.Email = EmailText.Text.Trim();
+            authNeedsUpdate = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(PasswordText.Text))
+        {
+            authAttributes.Password = PasswordText.Text;
+            authNeedsUpdate = true;
+        }
+
+        if (authNeedsUpdate)
+            await adminAuth.UpdateUserById(profile.Id.ToString(), authAttributes);
+    }
+
     private sealed class ProfileRow
     {
         public Guid Id { get; init; }
+        public string Email { get; init; } = string.Empty;
+        public string Password { get; init; } = string.Empty;
         public string Name { get; init; } = string.Empty;
         public string Role { get; init; } = string.Empty;
         public string RoleDisplayName => AppRoles.ToDisplayName(Role);
         public DateTime UpdatedAt { get; init; }
 
-        public static ProfileRow FromProfile(Profile profile) => new()
+        public static ProfileRow FromProfile(Profile profile, User? user) => new()
         {
             Id = profile.Id,
+            Email = user?.Email ?? "no email",
+            Password = string.Empty,
             Name = profile.Name,
             Role = profile.Role,
             UpdatedAt = profile.UpdatedAt

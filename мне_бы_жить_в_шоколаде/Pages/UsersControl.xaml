@@ -1,7 +1,13 @@
 ﻿<Page x:Class="мне_бы_жить_в_шоколаде.Pages.UsersControl"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="clr-namespace:мне_бы_жить_в_шоколаде.Converters"
       Title="Пользователи">
+
+    <Page.Resources>
+        <local:StringIsEmptyConverter x:Key="IsEmptyConverter"/>
+    </Page.Resources>
+    
     <Grid Margin="32">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -104,7 +110,36 @@
                             <TextBox x:Name="EmailText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="Пароль" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
-                            <TextBox x:Name="PasswordText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
+                            <Grid Margin="0,0,0,4">
+                                <!-- Placeholder dots overlay — visible when TextBox is empty AND not focused -->
+                                <TextBlock x:Name="PasswordPlaceholder"
+                                   Text="••••••••"
+                                   FontSize="18"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,0,0"
+                                   Foreground="{DynamicResource MdOnSurfaceVariant}"
+                                   IsHitTestVisible="False"
+                                   Panel.ZIndex="1">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <!-- Show only when TextBox is empty and not focused -->
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Text, ElementName=PasswordText, Converter={StaticResource IsEmptyConverter}}" Value="True"/>
+                                                        <Condition Binding="{Binding IsFocused, ElementName=PasswordText}" Value="False"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <TextBox x:Name="PasswordText" Style="{StaticResource ModernInput}"/>
+                            </Grid>
+                            <TextBlock Text="Пароль хеширован и не может быть отображен. Оставьте поле пустым, чтобы не изменять" TextWrapping="Wrap" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,16"/>
 
                             <TextBlock Text="ФИО / отображаемое имя" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                             <TextBox x:Name="NameText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
