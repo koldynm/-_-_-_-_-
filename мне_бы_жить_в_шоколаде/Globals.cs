@@ -1,7 +1,8 @@
-﻿using Supabase.Gotrue;
-using Supabase;
-using мне_бы_жить_в_шоколаде.Entities;
+﻿using Supabase;
+using Supabase.Gotrue;
+using Supabase.Gotrue.Interfaces;
 using System.Windows;
+using мне_бы_жить_в_шоколаде.Entities;
 
 namespace мне_бы_жить_в_шоколаде
 {
@@ -10,8 +11,7 @@ namespace мне_бы_жить_в_шоколаде
         private static bool IsProfileLoaded { get; set; } = false;
         private static Supabase.Client? Client {  get; set; }
         private static Profile? Profile { get; set; }
-
-        public static AdminClient? AdminClient { get; set; }
+        private static IGotrueAdminClient<User>? AdminAuth { get; set; }
         public static Session? Session => Client?.Auth?.CurrentSession;
 
         public static async Task<Supabase.Client> GetClient()
@@ -46,6 +46,18 @@ namespace мне_бы_жить_в_шоколаде
             var profile = await GetProfile(refresh);
             if (profile is null) throw new MethodAccessException("Нет профиля");
             return profile;
+        }
+
+        public static async Task<IGotrueAdminClient<User>> GetAdminAuth()
+        {
+            var client = await GetClient();
+            var profile = await RequireProfile();
+
+            if (!AppRoles.IsAdmin(profile.Role)) throw new MethodAccessException("Не админ");
+
+            AdminAuth ??= client.AdminAuth("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsY3p3bWV4dGR4cnBncmhiYW14Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjY3MzQxOCwiZXhwIjoyMDg4MjQ5NDE4fQ.qbfctNn4NQ4dsKl9M6uW_l-L-qOAZ6CDgAqSYsAlcmg");
+
+            return AdminAuth;
         }
     }
 }

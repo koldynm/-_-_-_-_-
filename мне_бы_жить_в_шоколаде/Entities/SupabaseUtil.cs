@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Supabase.Gotrue;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,5 @@ namespace мне_бы_жить_в_шоколаде.Entities
             await _supabase.InitializeAsync();
             return _supabase;
         }
-
     }
 }

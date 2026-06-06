@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Supabase.Gotrue;
+using System.Windows;
 using System.Windows.Controls;
 using мне_бы_жить_в_шоколаде.Entities;
 
@@ -141,9 +142,15 @@ public partial class UsersControl : Page
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(NameText.Text))
+        if (string.IsNullOrWhiteSpace(EmailText.Text))
         {
-            MessageBox.Show("Укажите имя пользователя.");
+            MessageBox.Show("Укажите электронную почту.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(PasswordText.Text))
+        {
+            MessageBox.Show("Укажите пароль.");
             return;
         }
 
@@ -161,23 +168,31 @@ public partial class UsersControl : Page
 
         try
         {
-            var client = await Globals.GetClient();
+            var adminAuth = await Globals.GetAdminAuth();
+
             if (_isCreateMode)
             {
-                var newProfile = new Profile
-                {
-                    Id = Guid.NewGuid(), // TODO
-                    Name = NameText.Text.Trim(),
-                    Role = role,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                await adminAuth.CreateUser(
+                    email: EmailText.Text,
+                    password: PasswordText.Text,
+                    attributes: new AdminUserAttributes
+                    {
+                        EmailConfirm = false,
+                        UserMetadata = new Dictionary<string, object>
+                        {
+                            { "full_name", NameText.Text.Trim() },
+                            { "role", role }
+                        }
+                    }
+                );
 
-                await client.From<Profile>().Insert(newProfile);
                 _isCreateMode = false;
                 MessageBox.Show("Пользователь добавлен.");
             }
             else if (UsersGrid.SelectedItem is ProfileRow profile)
             {
+                var client = await Globals.GetClient();
+
                 await client.From<Profile>()
                     .Where(user => user.Id == profile.Id)
                     .Set(user => user.Name, NameText.Text.Trim())
