@@ -35,11 +35,11 @@ namespace мне_бы_жить_в_шоколаде.Entities
 
         // --- СВЯЗИ (Для Join запросов) ---
 
-        [Reference(typeof(Location))]
-        public Location Location { get; set; }
+        [Reference(typeof(Location), true, false)]
+        public Location? Location { get; set; }
 
-        [Reference(typeof(EquipmentType))]
-        public EquipmentType EquipmentType { get; set; }
+        [Reference(typeof(EquipmentType), true, false)]
+        public EquipmentType? EquipmentType { get; set; }
 
         // Удобное свойство для вывода в UI (например, "Проектор - Epson EB-530")
         public string FullDisplayName => $"{EquipmentType?.Name} {Model}".Trim();
