@@ -101,8 +101,11 @@
                                        Foreground="{DynamicResource MdOnSurfaceVariant}"
                                        Margin="0,4,0,22"/>
 
-                            <TextBlock Text="Идентификатор" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
-                            <TextBox x:Name="UserIdText" Style="{StaticResource ModernInput}" IsReadOnly="True" Margin="0,0,0,16"/>
+                            <TextBlock Text="Эл. почта" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
+                            <TextBox x:Name="EmailText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Пароль" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
+                            <TextBox x:Name="PasswordText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="ФИО / отображаемое имя" Foreground="{DynamicResource MdOnSurfaceVariant}" Margin="4,0,0,8"/>
                             <TextBox x:Name="NameText" Style="{StaticResource ModernInput}" Margin="0,0,0,16"/>

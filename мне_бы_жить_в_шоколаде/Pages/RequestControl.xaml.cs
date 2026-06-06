@@ -8,17 +8,13 @@ namespace мне_бы_жить_в_шоколаде.Pages;
 
 public partial class RequestControl : Page
 {
-    private readonly Supabase.Client _supabase;
     private readonly RepairRequest _currentRequest;
-    private readonly Profile _profile;
     private readonly Action _close;
 
-    public RequestControl(Supabase.Client supabase, RepairRequest request, Profile profile, Action close)
+    public RequestControl(RepairRequest request, Action close)
     {
         InitializeComponent();
-        _supabase = supabase;
         _currentRequest = request;
-        _profile = profile;
         _close = close;
 
         UpdateActionButtons();
@@ -26,11 +22,20 @@ public partial class RequestControl : Page
         LoadMessages();
     }
 
-    private void UpdateActionButtons()
+    private async void UpdateActionButtons()
     {
-        var showTechnicianActions = AppRoles.IsTechnician(_profile.Role) && _currentRequest.CompletedAt == null;
-        BtnComplete.Visibility = showTechnicianActions ? Visibility.Visible : Visibility.Collapsed;
-        BtnRefuse.Visibility = showTechnicianActions ? Visibility.Visible : Visibility.Collapsed;
+        try
+        {
+            var profile = await Globals.RequireProfile();
+
+            var showTechnicianActions = AppRoles.IsTechnician(profile.Role) && _currentRequest.CompletedAt == null;
+            BtnComplete.Visibility = showTechnicianActions ? Visibility.Visible : Visibility.Collapsed;
+            BtnRefuse.Visibility = showTechnicianActions ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
     }
 
     private async void LoadRequestDetails()
@@ -83,7 +88,9 @@ public partial class RequestControl : Page
 
     private async Task<string> LoadProfileNameAsync(Guid profileId)
     {
-        var profile = await _supabase
+        var client = await Globals.GetClient();
+
+        var profile = await client
             .From<Profile>()
             .Filter("id", Postgrest.Constants.Operator.Equals, profileId.ToString())
             .Single();
@@ -93,7 +100,8 @@ public partial class RequestControl : Page
 
     private async Task<Equipment?> LoadEquipmentAsync(Guid equipmentId)
     {
-        return await _supabase
+        var client = await Globals.GetClient();
+        return await client
             .From<Equipment>()
             .Filter("id", Postgrest.Constants.Operator.Equals, equipmentId.ToString())
             .Single();
@@ -131,7 +139,10 @@ public partial class RequestControl : Page
     {
         try
         {
-            var response = await _supabase.From<ChatMessage>()
+            var client = await Globals.GetClient();
+            var profile = await Globals.RequireProfile();
+
+            var response = await client.From<ChatMessage>()
                 .Filter("request_id", Postgrest.Constants.Operator.Equals, _currentRequest.Id.ToString())
                 .Order("created_at", Postgrest.Constants.Ordering.Ascending)
                 .Get();
@@ -143,7 +154,7 @@ public partial class RequestControl : Page
                 SenderId = msg.SenderId,
                 MessageText = msg.MessageText,
                 CreatedAt = msg.CreatedAt,
-                IsOwnMessage = msg.SenderId == _profile.Id
+                IsOwnMessage = msg.SenderId == profile.Id
             }).ToList();
 
             MessagesList.ItemsSource = messages;
@@ -161,24 +172,35 @@ public partial class RequestControl : Page
         {
             return;
         }
-
-        var msg = new ChatMessage
+        try
         {
-            RequestId = _currentRequest.Id,
-            SenderId = _profile.Id,
-            MessageText = TxtNewMessage.Text.Trim(),
-            CreatedAt = DateTime.UtcNow
-        };
+            var client = await Globals.GetClient();
+            var profile = await Globals.RequireProfile();
 
-        await _supabase.From<ChatMessage>().Insert(msg);
-        TxtNewMessage.Clear();
-        LoadMessages();
+            var msg = new ChatMessage
+            {
+                RequestId = _currentRequest.Id,
+                SenderId = profile.Id,
+                MessageText = TxtNewMessage.Text.Trim(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await client.From<ChatMessage>().Insert(msg);
+            TxtNewMessage.Clear();
+            LoadMessages();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
     }
 
     private async void BtnComplete_Click(object sender, RoutedEventArgs e)
     {
+        var client = await Globals.GetClient();
         var now = DateTime.UtcNow;
-        await _supabase.From<RepairRequest>()
+
+        await client.From<RepairRequest>()
             .Where(x => x.Id == _currentRequest.Id)
             .Set(x => x.CompletedAt, now)
             .Set(x => x.Status, "closed")
@@ -193,7 +215,9 @@ public partial class RequestControl : Page
 
     private async void BtnRefuse_OnClick(object sender, RoutedEventArgs e)
     {
-        await _supabase.From<RepairRequest>()
+        var client = await Globals.GetClient();
+
+        await client.From<RepairRequest>()
             .Where(r => r.Id == _currentRequest.Id)
             .Set(r => r.TechnicianId, null)
             .Set(r => r.Status, "new")

@@ -6,14 +6,12 @@ namespace мне_бы_жить_в_шоколаде.Pages;
 
 public partial class UsersControl : Page
 {
-    private readonly Supabase.Client _supabase;
     private List<ProfileRow> _profiles = [];
     private bool _isCreateMode;
 
-    public UsersControl(Supabase.Client supabase)
+    public UsersControl()
     {
         InitializeComponent();
-        _supabase = supabase;
         ClearEditor(false);
         LoadProfiles();
     }
@@ -22,8 +20,9 @@ public partial class UsersControl : Page
     {
         try
         {
+            var client = await Globals.GetClient();
             var selectedId = (UsersGrid.SelectedItem as ProfileRow)?.Id;
-            var response = await _supabase
+            var response = await client
                 .From<Profile>()
                 .Order("full_name", Postgrest.Constants.Ordering.Ascending)
                 .Get();
@@ -75,8 +74,8 @@ public partial class UsersControl : Page
     {
         ShowEditor();
         EditorHintText.Text = "Измените данные пользователя и нажмите «Сохранить»";
-        UserIdText.IsReadOnly = true;
-        UserIdText.Text = profile.Id.ToString();
+        EmailText.Text = string.Empty; // TODO
+        PasswordText.Text = string.Empty; // TODO
         NameText.Text = profile.Name;
         RoleCombo.SelectedValue = AppRoles.IsRequester(profile.Role)
             ? AppRoles.Requester
@@ -96,8 +95,8 @@ public partial class UsersControl : Page
 
         ShowEditor();
         EditorHintText.Text = "Заполните данные нового пользователя";
-        UserIdText.IsReadOnly = false;
-        UserIdText.Text = string.Empty;
+        EmailText.Text = string.Empty;
+        PasswordText.Text = string.Empty;
         NameText.Text = string.Empty;
         RoleCombo.SelectedValue = AppRoles.Requester;
         UpdatedAtText.Text = "Будет заполнено при сохранении";
@@ -113,7 +112,8 @@ public partial class UsersControl : Page
     {
         UserPlaceholder.Visibility = Visibility.Visible;
         UserEditorPanel.Visibility = Visibility.Collapsed;
-        UserIdText.Text = string.Empty;
+        EmailText.Text = string.Empty;
+        PasswordText.Text = string.Empty;
         NameText.Text = string.Empty;
         RoleCombo.SelectedIndex = -1;
         UpdatedAtText.Text = string.Empty;
@@ -161,29 +161,24 @@ public partial class UsersControl : Page
 
         try
         {
+            var client = await Globals.GetClient();
             if (_isCreateMode)
             {
-                if (!Guid.TryParse(UserIdText.Text, out var userId))
-                {
-                    MessageBox.Show("Укажите корректный UUID пользователя.");
-                    return;
-                }
-
                 var newProfile = new Profile
                 {
-                    Id = userId,
+                    Id = Guid.NewGuid(), // TODO
                     Name = NameText.Text.Trim(),
                     Role = role,
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                await _supabase.From<Profile>().Insert(newProfile);
+                await client.From<Profile>().Insert(newProfile);
                 _isCreateMode = false;
                 MessageBox.Show("Пользователь добавлен.");
             }
             else if (UsersGrid.SelectedItem is ProfileRow profile)
             {
-                await _supabase.From<Profile>()
+                await client.From<Profile>()
                     .Where(user => user.Id == profile.Id)
                     .Set(user => user.Name, NameText.Text.Trim())
                     .Set(user => user.Role, role)

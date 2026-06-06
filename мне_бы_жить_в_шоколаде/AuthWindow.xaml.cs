@@ -7,25 +7,14 @@ namespace мне_бы_жить_в_шоколаде
 {
     public partial class AuthWindow : Window
     {
-        Supabase.Client _supabase;
-        Session? session;
-        public AuthWindow(Supabase.Client? supabase)
-        {
-            InitializeComponent();
-            init(supabase);
-
-        }
         public AuthWindow()
         {
             InitializeComponent();
-            init(null);
-
+            init();
         }
-        private async void init(Supabase.Client? supabase)
+        private async void init()
         {
-            _supabase = supabase ?? await SupabaseUtil.InitSupabase();
-            session = _supabase.Auth.CurrentSession;
-            if (session != null && session?.User != null) 
+            if (Globals.Session?.User != null) 
             {
                 ShowRequests();
             }
@@ -33,7 +22,7 @@ namespace мне_бы_жить_в_шоколаде
         }
         private void ShowRequests()
         {
-            var window = new MainWindow(_supabase, session);
+            var window = new MainWindow();
             window.Show();
             Close();
         }
@@ -51,7 +40,8 @@ namespace мне_бы_жить_в_шоколаде
 
             try
             {
-                session = await _supabase.Auth.SignIn(email, password);
+                var client = await Globals.GetClient();
+                await client.Auth.SignIn(email, password);
                 ShowRequests();
             }
             catch (Exception ex)

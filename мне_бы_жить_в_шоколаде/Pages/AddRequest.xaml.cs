@@ -20,21 +20,19 @@ namespace мне_бы_жить_в_шоколаде.Pages
     public partial class AddRequest : Page
     {
 
-        private readonly Supabase.Client _supabase;
         private readonly Action<bool> _onClose;
 
-        public AddRequest(Supabase.Client supabase, Action<bool> onClose)
+        public AddRequest(Action<bool> onClose)
         {
             InitializeComponent();
-            _supabase = supabase;
             _onClose = onClose;
             LoadEquipment();
         }
 
         private async void LoadEquipment()
         {
-          
-            var response = await _supabase.From<Equipment>().Get();
+            var client = await Globals.GetClient();
+            var response = await client.From<Equipment>().Get();
             EquipmentCombo.ItemsSource = response.Models;
         }
 
@@ -48,11 +46,12 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
             try
             {
-              
+                var client = await Globals.GetClient();
+
                 var newRequest = new RepairRequest
                 {
                     EquipmentId = (Guid)EquipmentCombo.SelectedValue,
-                    RequesterId = Guid.Parse(_supabase.Auth.CurrentUser.Id), 
+                    RequesterId = Guid.Parse(client.Auth.CurrentUser.Id), 
                     Description = DescriptionText.Text,
                     Priority = (PriorityCombo.SelectedItem as FrameworkElement)?.Tag.ToString(),
                     Status = "new",
@@ -61,7 +60,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
                 };
 
                 
-                await _supabase.From<RepairRequest>().Insert(newRequest);
+                await client.From<RepairRequest>().Insert(newRequest);
 
                 MessageBox.Show("Заявка успешно создана!");
                 _onClose(true);

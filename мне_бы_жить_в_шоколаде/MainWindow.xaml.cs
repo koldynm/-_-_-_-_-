@@ -1,5 +1,4 @@
-﻿using Supabase.Gotrue;
-using System.Windows;
+﻿using System.Windows;
 using мне_бы_жить_в_шоколаде.Entities;
 using мне_бы_жить_в_шоколаде.Pages;
 
@@ -7,29 +6,22 @@ namespace мне_бы_жить_в_шоколаде
 {
     public partial class MainWindow : Window
     {
-        private readonly Supabase.Client _supabase;
-        private readonly Session _session;
         private RequestsList? _requestsList;
-        private Profile? _currentProfile;
 
-        public MainWindow(Supabase.Client supabase, Session session)
+        public MainWindow()
         {
             InitializeComponent();
-            _supabase = supabase;
-            _session = session;
-            _ = InitializeAsync();
+            InitializeAsync();
         }
 
-        private async Task InitializeAsync()
+        private async void InitializeAsync()
         {
-            await LoadCurrentUserAsync();
+            var profile = await Globals.GetProfile();
+            if (profile is null) return;
 
-            if (_currentProfile == null)
-            {
-                return;
-            }
+            UpdateProfileText(profile);
 
-            AdminPanel.Visibility = AppRoles.IsAdmin(_currentProfile.Role)
+            AdminPanel.Visibility = AppRoles.IsAdmin(profile.Role)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
@@ -40,15 +32,14 @@ namespace мне_бы_жить_в_шоколаде
         private RequestsList CreateRequestsList()
         {
             return new RequestsList(
-                _supabase,
-                _currentProfile!,
                 request => NavigateToEditRequest(request),
-                request => NavigateToRequestControl(request));
+                request => NavigateToRequestControl(request)
+            );
         }
 
         private void NavigateToEditRequest(RepairRequest request)
         {
-            var page = new EditRequest(request, _supabase, updated =>
+            var page = new EditRequest(request, updated =>
             {
                 NavigateToRequests();
 
@@ -63,7 +54,7 @@ namespace мне_бы_жить_в_шоколаде
 
         private void NavigateToRequestControl(RepairRequest request)
         {
-            var page = new RequestControl(_supabase, request, _currentProfile!, () =>
+            var page = new RequestControl(request, () =>
             {
                 NavigateToRequests();
                 _requestsList?.LoadData();
@@ -82,34 +73,17 @@ namespace мне_бы_жить_в_шоколаде
             NavigationHost.Navigate(_requestsList);
         }
 
-        private async Task LoadCurrentUserAsync()
+        private async void UpdateProfileText(Profile profile)
         {
-            try
-            {
-                _currentProfile = await _supabase
-                    .From<Profile>()
-                    .Filter("id", Postgrest.Constants.Operator.Equals, _session.User.Id)
-                    .Single();
-
-                if (_currentProfile == null)
-                {
-                    throw new InvalidOperationException("Профиль пользователя не найден.");
-                }
-
-                NameText.Text = _currentProfile.Name;
-                RoleText.Text = AppRoles.ToDisplayName(_currentProfile.Role);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка загрузки профиля: {ex.Message}");
-            }
+            NameText.Text = profile.Name;
+            RoleText.Text = AppRoles.ToDisplayName(profile.Role);
         }
 
         private void BtnAddRequest_Click(object sender, RoutedEventArgs e)
         {
             ClearNavigationSelection();
 
-            var addPage = new AddRequest(_supabase, updated =>
+            var addPage = new AddRequest(updated =>
             {
                 _requestsList?.LoadData();
                 NavigateToRequests();
@@ -140,29 +114,30 @@ namespace мне_бы_жить_в_шоколаде
             _requestsList?.SetFilterStatus(status);
         }
 
-        private void UsersControl_Click(object sender, RoutedEventArgs e)
+        private async void UsersControl_Click(object sender, RoutedEventArgs e)
         {
-            if (!EnsureAdminAccess())
+            if (!await EnsureAdminAccess())
             {
                 return;
             }
 
-            NavigationHost.Navigate(new UsersControl(_supabase));
+            NavigationHost.Navigate(new UsersControl());
         }
 
-        private void EquipmentsControl_Click(object sender, RoutedEventArgs e)
+        private async void EquipmentsControl_Click(object sender, RoutedEventArgs e)
         {
-            if (!EnsureAdminAccess())
+            if (!await EnsureAdminAccess())
             {
                 return;
             }
 
-            NavigationHost.Navigate(new EquipmentsControl(_supabase));
+            NavigationHost.Navigate(new EquipmentsControl());
         }
 
-        private bool EnsureAdminAccess()
+        private async Task<bool> EnsureAdminAccess()
         {
-            if (AppRoles.IsAdmin(_currentProfile?.Role))
+            var profile = await Globals.GetProfile();
+            if (AppRoles.IsAdmin(profile.Role))
             {
                 return true;
             }
@@ -187,9 +162,10 @@ namespace мне_бы_жить_в_шоколаде
         {
             try
             {
-                await _supabase.Auth.SignOut();
+                var client = await Globals.GetClient();
+                await client.Auth.SignOut();
 
-                var authWindow = new AuthWindow(_supabase);
+                var authWindow = new AuthWindow();
 
                 authWindow.Show();
                 Close();

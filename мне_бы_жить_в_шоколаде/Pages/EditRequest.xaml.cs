@@ -8,15 +8,13 @@ namespace мне_бы_жить_в_шоколаде.Pages
 {
     public partial class EditRequest : Page
     {
-        private readonly Supabase.Client _supabase;
         private readonly Action<bool> _onClose;
 
         public RepairRequest Request { get; set; }
 
-        public EditRequest(RepairRequest request, Supabase.Client supabase, Action<bool> onClose)
+        public EditRequest(RepairRequest request, Action<bool> onClose)
         {
             InitializeComponent();
-            _supabase = supabase;
             _onClose = onClose;
             Request = request;
 
@@ -28,7 +26,8 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
         private async void LoadEquipment()
         {
-            var response = await _supabase.From<Equipment>().Get();
+            var client = await Globals.GetClient();
+            var response = await client.From<Equipment>().Get();
             EquipmentCombo.ItemsSource = response.Models;
         }
 
@@ -36,6 +35,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
         {
             try
             {
+                var client = await Globals.GetClient();
                 Request.UpdatedAt = DateTime.Now;
                 
                 if (Request.Status == "Completed")
@@ -43,7 +43,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
                     Request.ClosedAt = DateTime.Now;
                 }
 
-                await _supabase.From<RepairRequest>()
+                await client.From<RepairRequest>()
                                .Where(x => x.Id == Request.Id)
                                .Update(Request);
 

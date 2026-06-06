@@ -6,8 +6,6 @@ namespace мне_бы_жить_в_шоколаде.Pages
 {
     public partial class RequestsList : Page
     {
-        private readonly Supabase.Client _supabase;
-        private readonly Profile _profile;
         private readonly Action<RepairRequest> _editRequest;
         private readonly Action<RepairRequest> _controlRequest;
 
@@ -20,22 +18,19 @@ namespace мне_бы_жить_в_шоколаде.Pages
             UpdateUI();
         }
 
-        private void UpdateUI()
+        private async void UpdateUI()
         {
-            TakeRequestButton.Visibility = (AppRoles.IsTechnician(_profile.Role) && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
+            var profile = await Globals.GetProfile();
+            TakeRequestButton.Visibility = (AppRoles.IsTechnician(profile?.Role) && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
             ControlRequestButton.Visibility = (filterStatus == "in_progress") ? Visibility.Visible : Visibility.Collapsed;
-            EditRequestButton.Visibility = AppRoles.IsAdmin(_profile.Role) ? Visibility.Visible : Visibility.Collapsed;
-            DeleteRequestButton.Visibility = AppRoles.IsAdmin(_profile.Role) ? Visibility.Visible : Visibility.Collapsed;
-
-
+            EditRequestButton.Visibility = AppRoles.IsAdmin(profile?.Role) ? Visibility.Visible : Visibility.Collapsed;
+            DeleteRequestButton.Visibility = AppRoles.IsAdmin(profile?.Role) ? Visibility.Visible : Visibility.Collapsed;
         }
 
 
-        public RequestsList(Supabase.Client supabase, Profile profile, Action<RepairRequest> editRequest, Action<RepairRequest> controlRequest) 
+        public RequestsList(Action<RepairRequest> editRequest, Action<RepairRequest> controlRequest) 
         {
             InitializeComponent();
-            _supabase = supabase;
-            _profile = profile;
             _editRequest = editRequest;
             _controlRequest = controlRequest;
             UpdateUI();
@@ -47,7 +42,8 @@ namespace мне_бы_жить_в_шоколаде.Pages
         {
             try
             {
-                var response = await _supabase
+                var client = await Globals.GetClient();
+                var response = await client
                     .From<RepairRequest>()
                     .Filter("status", Postgrest.Constants.Operator.Equals, filterStatus)
                     .Get();
@@ -75,12 +71,22 @@ namespace мне_бы_жить_в_шоколаде.Pages
         {
             if (RequestsGrid.SelectedItem is RepairRequest request)
             {
-                await _supabase.From<RepairRequest>()
-                    .Where(r => r.Id == request.Id)
-                    .Set(r => r.TechnicianId, _profile.Id)
-                    .Set(r => r.Status, "in_progress")
-                    .Update();
-                LoadData();
+                try
+                {
+                    var client = await Globals.GetClient();
+                    var profile = await Globals.RequireProfile();
+
+                    await client.From<RepairRequest>()
+                        .Where(r => r.Id == request.Id)
+                        .Set(r => r.TechnicianId, profile.Id)
+                        .Set(r => r.Status, "in_progress")
+                        .Update();
+                    LoadData();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
             else
             {
@@ -106,7 +112,8 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
             if (RequestsGrid.SelectedItem is RepairRequest request)
             {
-                await _supabase.From<RepairRequest>()
+                var client = await Globals.GetClient();
+                await client.From<RepairRequest>()
                     .Where(r => r.Id == request.Id)
                     .Delete();
                 LoadData();

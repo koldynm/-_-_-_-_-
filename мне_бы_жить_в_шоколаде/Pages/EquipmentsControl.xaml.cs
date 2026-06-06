@@ -6,16 +6,14 @@ namespace мне_бы_жить_в_шоколаде.Pages;
 
 public partial class EquipmentsControl : Page
 {
-    private readonly Supabase.Client _supabase;
     private List<EquipmentRow> _equipments = [];
     private List<LookupOption> _types = [];
     private List<LookupOption> _locations = [];
     private bool _isCreateMode;
 
-    public EquipmentsControl(Supabase.Client supabase)
+    public EquipmentsControl()
     {
         InitializeComponent();
-        _supabase = supabase;
         ClearEditor(false);
         LoadDictionariesAndEquipments();
     }
@@ -35,12 +33,13 @@ public partial class EquipmentsControl : Page
 
     private async Task LoadDictionaries()
     {
-        var typesResponse = await _supabase
+        var client = await Globals.GetClient();
+        var typesResponse = await client
             .From<EquipmentType>()
             .Order("name", Postgrest.Constants.Ordering.Ascending)
             .Get();
 
-        var locationsResponse = await _supabase
+        var locationsResponse = await client
             .From<Location>()
             .Order("building", Postgrest.Constants.Ordering.Ascending)
             .Get();
@@ -54,8 +53,11 @@ public partial class EquipmentsControl : Page
 
     private async Task LoadEquipmentsAsync()
     {
+        var client = await Globals.GetClient();
+
         var selectedId = (EquipmentsGrid.SelectedItem as EquipmentRow)?.Id;
-        var response = await _supabase
+
+        var response = await client
             .From<Equipment>()
             .Order("inventory_number", Postgrest.Constants.Ordering.Ascending)
             .Get();
@@ -215,6 +217,8 @@ public partial class EquipmentsControl : Page
 
         try
         {
+            var client = await Globals.GetClient();
+
             var typeId = GetSelectedGuid(TypeCombo);
             var locationId = GetSelectedGuid(LocationCombo);
             var photoUrl = string.IsNullOrWhiteSpace(PhotoUrlText.Text) ? null : PhotoUrlText.Text.Trim();
@@ -233,13 +237,13 @@ public partial class EquipmentsControl : Page
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _supabase.From<Equipment>().Insert(newEquipment);
+                await client.From<Equipment>().Insert(newEquipment);
                 _isCreateMode = false;
                 MessageBox.Show("Оборудование создано.");
             }
             else if (EquipmentsGrid.SelectedItem is EquipmentRow equipment)
             {
-                await _supabase.From<Equipment>()
+                await client.From<Equipment>()
                     .Where(item => item.Id == equipment.Id)
                     .Set(item => item.InventoryNumber, InventoryNumberText.Text.Trim())
                     .Set(item => item.TypeId, typeId)
@@ -282,7 +286,8 @@ public partial class EquipmentsControl : Page
 
         try
         {
-            await _supabase.From<Equipment>()
+            var client = await Globals.GetClient();
+            await client.From<Equipment>()
                 .Where(item => item.Id == equipment.Id)
                 .Delete();
 
