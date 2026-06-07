@@ -13,6 +13,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
         public void SetFilterStatus(string filterStatus)
         {
+            RequestsGrid.ItemsSource = null;
             this.filterStatus = filterStatus;
             LoadData();
             UpdateUI();
@@ -20,11 +21,11 @@ namespace мне_бы_жить_в_шоколаде.Pages
 
         private async void UpdateUI()
         {
-            var profile = await Globals.GetProfile();
-            TakeRequestButton.Visibility = (AppRoles.IsTechnician(profile?.Role) && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
+            var profile = await Globals.RequireProfile();
+            TakeRequestButton.Visibility = (AppRoles.IsTechnician(profile.Role) && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
             ControlRequestButton.Visibility = (filterStatus == "in_progress") ? Visibility.Visible : Visibility.Collapsed;
-            EditRequestButton.Visibility = AppRoles.IsAdmin(profile?.Role) ? Visibility.Visible : Visibility.Collapsed;
-            DeleteRequestButton.Visibility = AppRoles.IsAdmin(profile?.Role) ? Visibility.Visible : Visibility.Collapsed;
+            EditRequestButton.Visibility = AppRoles.IsAdmin(profile.Role) ? Visibility.Visible : Visibility.Collapsed;
+            DeleteRequestButton.Visibility = AppRoles.IsAdmin(profile.Role) ? Visibility.Visible : Visibility.Collapsed;
         }
 
 
@@ -42,11 +43,19 @@ namespace мне_бы_жить_в_шоколаде.Pages
         {
             try
             {
+
                 var client = await Globals.GetClient();
+                var profile = await Globals.RequireProfile();
+
+                System.Diagnostics.Debug.WriteLine($"Загрузка запросов ({filterStatus}, {profile.Id})");
+
                 var response = await client
                     .From<RepairRequest>()
                     .Filter("status", Postgrest.Constants.Operator.Equals, filterStatus)
                     .Get();
+
+                System.Diagnostics.Debug.WriteLine($"Запросы загружены ({response.Models.Count})");
+
                 var requests = response.Models;
 
                 RequestsGrid.ItemsSource = requests;

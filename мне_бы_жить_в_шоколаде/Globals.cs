@@ -1,6 +1,7 @@
 ﻿using Supabase;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Interfaces;
+using System.Configuration;
 using System.Windows;
 using мне_бы_жить_в_шоколаде.Entities;
 
@@ -8,56 +9,93 @@ namespace мне_бы_жить_в_шоколаде
 {
     public static class Globals
     {
-        private static bool IsProfileLoaded { get; set; } = false;
-        private static Supabase.Client? Client {  get; set; }
-        private static Profile? Profile { get; set; }
-        private static IGotrueAdminClient<User>? AdminAuth { get; set; }
-        public static Session? Session => Client?.Auth?.CurrentSession;
+        private static readonly SemaphoreSlim _lock = new(1, 1);
+
+        private static bool _isProfileLoaded;
+        private static Supabase.Client? _client;
+        private static Profile? _profile;
+        private static IGotrueAdminClient<User>? _adminAuth;
+
+        public static Session? Session => _client?.Auth?.CurrentSession;
+
+        // ─── Client ────────────────────────────────────────────────────────────
 
         public static async Task<Supabase.Client> GetClient()
         {
-            Client ??= await SupabaseUtil.InitSupabase();
+            if (_client is not null) return _client;
 
-            return Client;
+            await _lock.WaitAsync();
+            try
+            {
+                _client ??= await SupabaseUtil.InitSupabase();
+            }
+            finally
+            {
+                _lock.Release();
+            }
+
+            return _client;
         }
+
+        // ─── Profile ───────────────────────────────────────────────────────────
+
         public static async Task<Profile?> GetProfile(bool refresh = false)
         {
-            if (Session is not null && (!IsProfileLoaded || refresh))
+            if (Session is null) return null;
+            if (_isProfileLoaded && !refresh) return _profile;
+
+            try
             {
-                try
-                {
-                    var client = await GetClient();
-                    Profile = await client
-                        .From<Profile>()
-                        .Filter("id", Postgrest.Constants.Operator.Equals, Session.User.Id)
-                        .Single();
-                    IsProfileLoaded = true;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    MessageBox.Show($"Ошибка загрузки профиля: {ex.Message}");
-                }
+                var client = await GetClient();
+                var userId = Session.User?.Id
+                    ?? throw new InvalidOperationException("ID пользователя отсутствует в сессии.");
+
+                _profile = await client
+                    .From<Profile>()
+                    .Filter("id", Postgrest.Constants.Operator.Equals, userId)
+                    .Single();
+
+                _isProfileLoaded = true;
             }
-            return Profile;
+            catch (Exception ex)
+            {
+                _isProfileLoaded = false;
+                MessageBox.Show($"Ошибка загрузки профиля: {ex.Message}",
+                                "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            return _profile;
         }
+
         public static async Task<Profile> RequireProfile(bool refresh = false)
-        {
-            var profile = await GetProfile(refresh);
-            if (profile is null) throw new MethodAccessException("Нет профиля");
-            return profile;
-        }
+            => await GetProfile(refresh)
+               ?? throw new InvalidOperationException("Профиль не загружен или пользователь не авторизован.");
+
+        // ─── Admin ─────────────────────────────────────────────────────────────
 
         public static async Task<IGotrueAdminClient<User>> GetAdminAuth()
         {
             var client = await GetClient();
             var profile = await RequireProfile();
 
-            if (!AppRoles.IsAdmin(profile.Role)) throw new MethodAccessException("Не админ");
+            if (!AppRoles.IsAdmin(profile.Role))
+                throw new UnauthorizedAccessException("Доступ запрещён: требуется роль администратора.");
 
-            AdminAuth ??= client.AdminAuth("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsY3p3bWV4dGR4cnBncmhiYW14Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjY3MzQxOCwiZXhwIjoyMDg4MjQ5NDE4fQ.qbfctNn4NQ4dsKl9M6uW_l-L-qOAZ6CDgAqSYsAlcmg");
+            if (_adminAuth is not null) return _adminAuth;
 
-            return AdminAuth;
+            var serviceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsY3p3bWV4dGR4cnBncmhiYW14Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjY3MzQxOCwiZXhwIjoyMDg4MjQ5NDE4fQ.qbfctNn4NQ4dsKl9M6uW_l-L-qOAZ6CDgAqSYsAlcmg";
+
+            _adminAuth = client.AdminAuth(serviceKey);
+            return _adminAuth;
+        }
+
+        // ─── Сброс состояния (при выходе из аккаунта) ──────────────────────────
+
+        public static void Reset()
+        {
+            _profile = null;
+            _isProfileLoaded = false;
+            _adminAuth = null;
         }
     }
 }

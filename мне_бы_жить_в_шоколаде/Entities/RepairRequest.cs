@@ -39,12 +39,12 @@ namespace мне_бы_жить_в_шоколаде.Entities
         public DateTime CreatedAt { get; set; }
 
         [Column("updated_at")]
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
         [Column("closed_at")]
-        public DateTime ClosedAt { get; set; }
+        public DateTime? ClosedAt { get; set; }
 
-        [Reference(typeof(Equipment))]
+        [Reference(typeof(Equipment), true, false)]
         public Equipment Equipment { get; set; }
 
         [Column("deadline")]

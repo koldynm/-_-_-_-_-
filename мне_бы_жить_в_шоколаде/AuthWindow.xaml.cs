@@ -20,8 +20,22 @@ namespace мне_бы_жить_в_шоколаде
             }
 
         }
-        private void ShowRequests()
+        private async void ShowRequests()
         {
+            SignInButton.IsEnabled = false;
+            SignInButton.Content = "Загрузка профиля...";
+
+            var profile = await Globals.GetProfile(true);
+
+            SignInButton.IsEnabled = true;
+            SignInButton.Content = "Профиль загружен";
+
+            if (profile is null)
+            {
+                MessageBox.Show("Профиль не найден");
+                return;
+            }
+
             var window = new MainWindow();
             window.Show();
             Close();
