@@ -165,17 +165,25 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0"
-                                        Content="Сбросить"
-                                        Click="ResetUserForm_Click"
-                                        Height="40"
-                                        Background="Transparent"
-                                        Foreground="{DynamicResource MdOnSurfaceVariant}"/>
+                                    x:Name="DeleteUserBtn"
+                                    Content="Удалить"
+                                    Click="DeleteUser_Click"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Background="{DynamicResource MdTertiary}"
+                                    Height="40"/>
                                 <Button Grid.Column="2"
                                         Content="Сохранить"
                                         Click="SaveUser_Click"
                                         Style="{StaticResource PrimaryButton}"
                                         Height="40"/>
                             </Grid>
+                            <Button 
+                                Content="Сбросить"
+                                Click="ResetUserForm_Click"
+                                Height="40"
+                                Margin="0,12,0,0"
+                                Background="Transparent"
+                                Foreground="{DynamicResource MdOnSurfaceVariant}"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>

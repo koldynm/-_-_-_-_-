@@ -28,13 +28,13 @@ namespace мне_бы_жить_в_шоколаде
             var profile = await Globals.GetProfile(true);
 
             SignInButton.IsEnabled = true;
-            SignInButton.Content = "Профиль загружен";
 
             if (profile is null)
             {
                 MessageBox.Show("Профиль не найден");
                 return;
             }
+            SignInButton.Content = "Профиль загружен";
 
             var window = new MainWindow();
             window.Show();
@@ -54,13 +54,22 @@ namespace мне_бы_жить_в_шоколаде
 
             try
             {
+                SignInButton.IsEnabled = false;
+                SignInButton.Content = "Вход...";
+
                 var client = await Globals.GetClient();
                 await client.Auth.SignIn(email, password);
                 ShowRequests();
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"log in with: email failed: '{email}'; password: '{password}'; error: {ex.Message}");
                 MessageBox.Show("Ошибка: Неправильный логин или пароль!");
+            }
+            finally
+            {
+                SignInButton.IsEnabled = true;
+                SignInButton.Content = "Войти";
             }
         }
     }

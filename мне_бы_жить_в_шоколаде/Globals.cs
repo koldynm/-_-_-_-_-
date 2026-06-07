@@ -17,6 +17,17 @@ namespace мне_бы_жить_в_шоколаде
         private static IGotrueAdminClient<User>? _adminAuth;
 
         public static Session? Session => _client?.Auth?.CurrentSession;
+        public static Guid? CurrentUserId
+        {
+            get {
+                var idRaw = Session?.User?.Id;
+
+                if (idRaw is null) return null;
+
+                bool parsed = Guid.TryParse(idRaw, out Guid id);
+                return parsed ? id : null;
+            }
+        }
 
         // ─── Client ────────────────────────────────────────────────────────────
 

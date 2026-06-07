@@ -3,7 +3,6 @@ using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using мне_бы_жить_в_шоколаде.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace мне_бы_жить_в_шоколаде.Pages;
 
@@ -97,6 +96,19 @@ public partial class UsersControl : Page
             ? AppRoles.Requester
             : profile.Role;
         UpdatedAtText.Text = profile.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+
+        try
+        {
+            var currentUserId = Globals.CurrentUserId;
+            if (currentUserId is null) return;
+
+            DeleteUserBtn.Visibility = currentUserId == profile.Id ? Visibility.Collapsed : Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+            DeleteUserBtn.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void ClearEditor(bool createMode)
@@ -116,6 +128,8 @@ public partial class UsersControl : Page
         NameText.Text = string.Empty;
         RoleCombo.SelectedValue = AppRoles.Requester;
         UpdatedAtText.Text = "Будет заполнено при сохранении";
+
+        DeleteUserBtn.Visibility = createMode ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void ShowEditor()
@@ -200,6 +214,40 @@ public partial class UsersControl : Page
         }
     }
 
+    private async void DeleteUser_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isCreateMode)
+        {
+            MessageBox.Show("Нельзя удалить пользователя при его создании. Используйте очистить форму");
+            return;
+        }
+        if (UsersGrid.SelectedItem is not ProfileRow profile)
+        {
+            MessageBox.Show("Выберите пользователя");
+            return;
+        }
+        try
+        {
+            var currentUserId = Globals.CurrentUserId;
+            if (currentUserId is null) return;
+
+            if (profile.Id == currentUserId)
+            {
+                MessageBox.Show("Нельзя удалить самого себя");
+                return;
+            }
+
+            var adminAuth = await Globals.GetAdminAuth();
+            await adminAuth.DeleteUser(profile.Id.ToString());
+
+            LoadProfiles();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка удаления пользователя: {ex.Message}");
+        }
+    }
+
     private async Task createUser()
     {
         if (RoleCombo.SelectedValue is not string role) return;
@@ -211,7 +259,7 @@ public partial class UsersControl : Page
             password: PasswordText.Text,
             attributes: new AdminUserAttributes
             {
-                EmailConfirm = false,
+                EmailConfirm = true,
                 UserMetadata = new Dictionary<string, object>
                 {
                     { "full_name", NameText.Text.Trim() },
@@ -219,6 +267,7 @@ public partial class UsersControl : Page
                 }
             }
         );
+        System.Diagnostics.Debug.WriteLine($"create new user: email: '{EmailText.Text}'; password: '{PasswordText.Text}';");
     }
 
     private async Task updateUser(ProfileRow profile)
