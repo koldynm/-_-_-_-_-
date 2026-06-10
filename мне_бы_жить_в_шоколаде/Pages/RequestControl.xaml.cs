@@ -65,11 +65,15 @@ public partial class RequestControl : Page
     {
         try
         {
-            var requesterTask = LoadProfileNameAsync(_currentRequest.RequesterId);
+            var requesterTask = _currentRequest.RequesterId.HasValue 
+                ? LoadProfileNameAsync(_currentRequest.RequesterId.Value) 
+                : Task.FromResult("Нет");
             var technicianTask = _currentRequest.TechnicianId.HasValue
                 ? LoadProfileNameAsync(_currentRequest.TechnicianId.Value)
                 : Task.FromResult("Не назначен");
-            var equipmentTask = LoadEquipmentAsync(_currentRequest.EquipmentId);
+            var equipmentTask = _currentRequest.EquipmentId.HasValue
+                ? LoadEquipmentAsync(_currentRequest.EquipmentId.Value)
+                : Task.FromResult<Equipment?>(null);
 
             await Task.WhenAll(requesterTask, technicianTask, equipmentTask);
 
@@ -114,9 +118,11 @@ public partial class RequestControl : Page
             return "Оборудование не найдено";
         }
 
-        return string.IsNullOrWhiteSpace(equipment.FullDisplayName)
+        var fullDisplayName = $"{equipment.EquipmentType?.Name} {equipment.Model}".Trim();
+
+        return string.IsNullOrWhiteSpace(fullDisplayName)
             ? equipment.Model
-            : equipment.FullDisplayName;
+            : fullDisplayName;
     }
 
     private static string GetEquipmentInfo(Equipment? equipment)

@@ -14,7 +14,7 @@ namespace мне_бы_жить_в_шоколаде.Entities
         public Guid RequestId { get; set; }
 
         [Column("sender_id")]
-        public Guid SenderId { get; set; }
+        public Guid? SenderId { get; set; }
 
         [Column("message_text")]
         public string MessageText { get; set; }

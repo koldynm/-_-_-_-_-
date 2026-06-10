@@ -40,8 +40,5 @@ namespace мне_бы_жить_в_шоколаде.Entities
 
         [Reference(typeof(EquipmentType), true, false)]
         public EquipmentType? EquipmentType { get; set; }
-
-        // Удобное свойство для вывода в UI (например, "Проектор - Epson EB-530")
-        public string FullDisplayName => $"{EquipmentType?.Name} {Model}".Trim();
     }
 }

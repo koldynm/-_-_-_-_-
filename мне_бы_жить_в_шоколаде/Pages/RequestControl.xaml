@@ -15,11 +15,11 @@
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1.05*"/>
+            <ColumnDefinition Width="15"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Margin="0,0,15,0"
-                Background="{DynamicResource MdSurface}"
+        <Border Background="{DynamicResource MdSurface}"
                 BorderBrush="{DynamicResource MdOutline}"
                 BorderThickness="1"
                 CornerRadius="16"
@@ -110,7 +110,13 @@
             </Grid>
         </Border>
 
-        <Border Grid.Column="1" Background="{DynamicResource MdSurfaceContainer}" BorderBrush="{DynamicResource MdSurfaceContainerHigh}" BorderThickness="1" CornerRadius="16" Padding="16" >
+        <Border 
+            Grid.Column="2"
+            Background="{DynamicResource MdSurface}"
+            BorderBrush="{DynamicResource MdOutline}"
+            BorderThickness="1"
+            CornerRadius="16"
+            Padding="24">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

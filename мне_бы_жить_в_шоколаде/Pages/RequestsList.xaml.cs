@@ -8,6 +8,7 @@ namespace мне_бы_жить_в_шоколаде.Pages
     {
         private readonly Action<RepairRequest> _editRequest;
         private readonly Action<RepairRequest> _controlRequest;
+        private readonly Action<RepairRequest> _requestInfo;
 
         private string filterStatus = "new";
 
@@ -22,18 +23,25 @@ namespace мне_бы_жить_в_шоколаде.Pages
         private async void UpdateUI()
         {
             var profile = await Globals.RequireProfile();
+
             TakeRequestButton.Visibility = (AppRoles.IsTechnician(profile.Role) && filterStatus == "new") ? Visibility.Visible : Visibility.Collapsed;
             ControlRequestButton.Visibility = (filterStatus == "in_progress") ? Visibility.Visible : Visibility.Collapsed;
             EditRequestButton.Visibility = AppRoles.IsAdmin(profile.Role) ? Visibility.Visible : Visibility.Collapsed;
             DeleteRequestButton.Visibility = AppRoles.IsAdmin(profile.Role) ? Visibility.Visible : Visibility.Collapsed;
+            RequestInfoButton.Visibility = filterStatus == "new" || filterStatus == "closed" ? Visibility.Visible : Visibility.Collapsed;
         }
 
 
-        public RequestsList(Action<RepairRequest> editRequest, Action<RepairRequest> controlRequest) 
+        public RequestsList(
+            Action<RepairRequest> editRequest, 
+            Action<RepairRequest> controlRequest,
+            Action<RepairRequest> requestInfo
+        ) 
         {
             InitializeComponent();
             _editRequest = editRequest;
             _controlRequest = controlRequest;
+            _requestInfo = requestInfo;
             UpdateUI();
 
             LoadData();
@@ -145,5 +153,17 @@ namespace мне_бы_жить_в_шоколаде.Pages
                 MessageBox.Show("Выберите задачу");
             }
         }
+
+        private void RequestInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (RequestsGrid.SelectedItem is RepairRequest request)
+            {
+                _requestInfo(request);
+            }
+            else
+            {
+                MessageBox.Show("Выберите задачу");
+            }
+        } 
     }
 }

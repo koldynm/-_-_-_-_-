@@ -18,10 +18,10 @@ namespace мне_бы_жить_в_шоколаде.Entities
         public Guid Id { get; set; }
 
         [Column("equipment_id")]
-        public Guid EquipmentId { get; set; }
+        public Guid? EquipmentId { get; set; }
 
         [Column("requester_id")]
-        public Guid RequesterId { get; set; }
+        public Guid? RequesterId { get; set; }
 
         [Column("technician_id")]
         public Guid? TechnicianId { get; set; }

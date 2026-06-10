@@ -71,11 +71,11 @@
             </Border>
 
             <Border Grid.Column="2"
-                    CornerRadius="16"
-                    Padding="24"
-                    Background="{DynamicResource MdSurfaceContainer}"
-                    BorderBrush="{DynamicResource MdSurfaceContainerHigh}"
-                    BorderThickness="1">
+                CornerRadius="12"
+                Background="{DynamicResource MdSurfaceContainer}"
+                BorderBrush="{DynamicResource MdSurfaceContainerHigh}"
+                BorderThickness="1"
+                ClipToBounds="True">
                 <Grid>
                     <StackPanel x:Name="UserPlaceholder"
                                 VerticalAlignment="Center"

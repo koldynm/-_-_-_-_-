@@ -81,6 +81,7 @@
                     Style="{StaticResource PrimaryButton}" />
 
             <Button x:Name="EditRequestButton" Content="Изменить" Click="EditRequestButton_Click"/>
+            <Button x:Name="RequestInfoButton" Content="Информация" Click="RequestInfoButton_Click"/>
 
             <Button x:Name="DeleteRequestButton" Content="Удалить" 
                     Click="DeleteRequestButton_Click" 

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Navigation;
 using мне_бы_жить_в_шоколаде.Entities;
 using мне_бы_жить_в_шоколаде.Pages;
 
@@ -26,14 +27,22 @@ namespace мне_бы_жить_в_шоколаде
                 : Visibility.Collapsed;
 
             _requestsList = CreateRequestsList();
+            NavigationHost.Navigated += NavigationHost_Navigated;
             NavigationHost.Navigate(_requestsList);
+        }
+        private void NavigationHost_Navigated(object sender, NavigationEventArgs e)
+        {
+            NavigationBar.Visibility = NavigationHost.CanGoBack
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private RequestsList CreateRequestsList()
         {
             return new RequestsList(
                 request => NavigateToEditRequest(request),
-                request => NavigateToRequestControl(request)
+                request => NavigateToRequestControl(request),
+                request => NavigateToRequestInfo(request)
             );
         }
 
@@ -60,6 +69,11 @@ namespace мне_бы_жить_в_шоколаде
                 _requestsList?.LoadData();
             });
 
+            NavigationHost.Navigate(page);
+        }
+        private void NavigateToRequestInfo(RepairRequest request)
+        {
+            var page = new RequestInfo(request);
             NavigationHost.Navigate(page);
         }
 
@@ -173,6 +187,13 @@ namespace мне_бы_жить_в_шоколаде
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка выхода: {ex.Message}");
+            }
+        }
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NavigationHost.CanGoBack)
+            {
+                NavigationHost.GoBack();
             }
         }
     }
